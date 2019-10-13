@@ -4,12 +4,13 @@ from conductor.config import port, log_level
 from conductor.network import Network
 
 
-def serve():
-    async def consumer(message):
-        logging.info('received %s from %s', message.payload, message.source)
-        await message.reply('OK')
-        await network.publish(message.payload)
+async def consumer(network, message):
+    logging.info('received %s from %s', message.payload, message.source)
+    await network.send(message.source, 'OK')
+    await network.publish(message.payload)
 
+
+def serve():
     async def shutdown(_app):
         await network.close()
 

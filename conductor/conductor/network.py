@@ -3,7 +3,7 @@ from collections import namedtuple
 from uuid import uuid4
 from aiohttp import web, WSMsgType
 
-Message = namedtuple('Message', ['source', 'payload', 'reply'])
+Message = namedtuple('Message', ['source', 'payload'])
 
 
 class Network:
@@ -38,12 +38,14 @@ class Network:
         try:
             message = Message(
                 source=sid,
-                payload=msg.json(),
-                reply=reply
+                payload=msg.json()
             )
-            await self.handler(message)
+            await self.handler(self, message)
         except:
             logging.exception('cannot handle message %s', msg)
+
+    async def send(self, sid, payload):
+        await self.registry[sid].send_json(payload)
 
     async def publish(self, payload):
         for ws in self.registry.sockets.values():
