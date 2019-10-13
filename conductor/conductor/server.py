@@ -1,26 +1,30 @@
 import logging
 from aiohttp import web
-from conductor.config import port, log_level
+from conductor.config import log_level, port
 from conductor.network import Network
 
 
-async def consumer(network, message):
+async def network_handler(network, message):
     logging.info('received %s from %s', message.payload, message.source)
     await network.send(message.source, 'OK')
     await network.publish(message.payload)
 
 
-def serve():
+def application(handler):
     async def shutdown(_app):
         await network.close()
 
-    logging.basicConfig(level=log_level)
-    logging.info('starting conductor')
-    network = Network(handler=consumer)
+    network = Network(handler=handler)
     app = web.Application()
     app.on_shutdown.append(shutdown)
     app.add_routes([web.get('/', network)])
-    web.run_app(app, port=port)
+    return app
+
+
+def serve():
+    logging.basicConfig(level=log_level)
+    logging.info('starting conductor on port %s', port)
+    web.run_app(application(network_handler), port=port)
 
 
 if __name__ == '__main__':

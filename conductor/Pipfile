@@ -3,11 +3,15 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
-
 [packages]
 aiohttp = "*"
 environs = "*"
+pytest-aiohttp = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-aiohttp = "*"
+pytest-timeout = "*"
 
 [requires]
 python_version = "3.7"

@@ -21,7 +21,7 @@ class Network:
         while True:
             msg = await ws.receive()
             if msg.type == WSMsgType.text:
-                await self._handle_message(sid, ws, msg)
+                await self._handle_message(sid, msg)
             elif msg.type == WSMsgType.ERROR:
                 logging.exception('socket error', ws.exception())
             elif msg.type == WSMsgType.CLOSE:
@@ -31,10 +31,7 @@ class Network:
         self.registry.unregister(sid)
         return ws
 
-    async def _handle_message(self, sid, ws, msg):
-        async def reply(payload):
-            await ws.send_json(payload)
-
+    async def _handle_message(self, sid, msg):
         try:
             message = Message(
                 source=sid,
@@ -45,7 +42,8 @@ class Network:
             logging.exception('cannot handle message %s', msg)
 
     async def send(self, sid, payload):
-        await self.registry[sid].send_json(payload)
+        ws = self.registry.sockets[sid]
+        await ws.send_json(payload)
 
     async def publish(self, payload):
         for ws in self.registry.sockets.values():
