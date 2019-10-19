@@ -1,15 +1,22 @@
-import logging
 from collections import namedtuple
+import logging
 from uuid import uuid4
-from aiohttp import web, WSMsgType
+
+from aiohttp import WSMsgType, web
 
 Message = namedtuple('Message', ['source', 'payload'])
 
 
+def noop(*_args):
+    pass
+
+
 class Network:
-    def __init__(self, handler):
+    def __init__(self, on_enter=noop, on_message=noop, on_exit=noop):
         self.registry = SocketRegistry()
-        self.handler = handler
+        self.on_enter = on_enter
+        self.on_message = on_message
+        self.on_exit = on_exit
 
     async def __call__(self, request):
         ws = web.WebSocketResponse()
@@ -18,6 +25,7 @@ class Network:
             raise web.HTTPMethodNotAllowed()
         await ws.prepare(request)
         sid = self.registry.register(ws)
+        self.on_enter(self, sid)
         while True:
             msg = await ws.receive()
             if msg.type == WSMsgType.text:
@@ -29,6 +37,7 @@ class Network:
             else:
                 logging.warning('unexpected message %s', msg.type)
         self.registry.unregister(sid)
+        self.on_exit(self, sid)
         return ws
 
     async def _handle_message(self, sid, msg):
@@ -37,7 +46,7 @@ class Network:
                 source=sid,
                 payload=msg.json()
             )
-            await self.handler(self, message)
+            await self.on_message(self, message)
         except:
             logging.exception('cannot handle message %s', msg)
 
