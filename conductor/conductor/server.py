@@ -1,5 +1,9 @@
+import asyncio
 import logging
 from aiohttp import web
+from box import Box
+
+from conductor.game import Conductor
 from conductor.config import log_level, port
 from conductor.network import Network
 
@@ -14,21 +18,20 @@ def application(network):
     return app
 
 
+class MockQuizSource:
+    async def next(self):
+        return Box(question='2+1?', answers=['1', '2', '3', '4'], answer=2)
+
+
 def serve():
-    async def on_enter(_network, user):
-        logging.info('entered user %s', user)
-
-    async def on_message(network, message):
-        logging.info('received %s from %s', message.payload, message.source)
-        await network.send(message.source, 'OK')
-        await network.publish(message.payload)
-
-    async def on_exit(_network, user):
-        logging.info('exit user %s', user)
-
     logging.basicConfig(level=log_level)
     logging.info('starting conductor on port %s', port)
-    network = Network(on_enter=on_enter, on_message=on_message, on_exit=on_exit)
+    conductor = Conductor(quiz_source=MockQuizSource())
+    network = Network(
+        on_enter=conductor.on_enter,
+        on_message=conductor.on_message,
+        on_exit=conductor.on_exit
+    )
     web.run_app(application(network), port=port)
 
 

@@ -1,11 +1,13 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
+
+from box import Box
 
 from conductor.network import Network
 from conductor.server import application
 
 
 async def test_enter_event(aiohttp_client):
-    mock = Mock()
+    mock = AsyncMock()
     network = Network(on_enter=mock)
     client = await aiohttp_client(application(network))
     await client.ws_connect('/')
@@ -20,9 +22,9 @@ async def test_send(aiohttp_client):
     network = Network(on_message=echo)
     client = await aiohttp_client(application(network))
     ws = await client.ws_connect('/')
-    await ws.send_json(123)
-    got = await ws.receive_json(timeout=1)
-    assert got == 123
+    await ws.send_json(Box(x=1))
+    got = await ws.receive_json(timeout=3)
+    assert got == Box(x=1)
 
 
 async def test_publish(aiohttp_client):
@@ -33,15 +35,15 @@ async def test_publish(aiohttp_client):
     client = await aiohttp_client(application(network))
     ws1 = await client.ws_connect('/')
     ws2 = await client.ws_connect('/')
-    await ws1.send_json(123)
+    await ws1.send_json(Box(x=1))
     got = await ws1.receive_json(timeout=1)
-    assert got == 123
+    assert got == Box(x=1)
     got = await ws2.receive_json(timeout=1)
-    assert got == 123
+    assert got == Box(x=1)
 
 
 async def test_exit_event(aiohttp_client):
-    mock = Mock()
+    mock = AsyncMock()
     network = Network(on_exit=mock)
     client = await aiohttp_client(application(network))
     ws = await client.ws_connect('/')

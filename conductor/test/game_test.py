@@ -1,6 +1,7 @@
-from unittest.mock import Mock, AsyncMock
+import asyncio
+from unittest.mock import Mock, AsyncMock, call
 from box import Box
-from conductor.conductor import Conductor
+from conductor.game import Conductor
 from conductor.network import Message
 
 
@@ -9,6 +10,7 @@ class UserEmulator:
         self.conductor = conductor
         self.net = net
         self.uid = uid
+        self.answer = None
 
     async def enter(self):
         await self.conductor.on_enter(self.net, self.uid)
@@ -16,11 +18,16 @@ class UserEmulator:
     async def join(self):
         await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='join')))
 
-    async def challenge(self):
+    async def challenge_and_answer(self, answer):
+        self.net.receive = AsyncMock(return_value=Message(source=self.uid, payload=Box(answer=answer)))
         await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='challenge')))
 
-    async def answer(self, index):
-        await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='answer', answer=index)))
+    async def challenge_without_answer(self):
+        def raise_timeout(*args, **kwargs):
+            raise asyncio.TimeoutError()
+
+        self.net.receive = raise_timeout
+        await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='challenge')))
 
     async def exit(self):
         await self.conductor.on_exit(self.net, self.uid)
@@ -29,33 +36,38 @@ class UserEmulator:
 async def test_single_player_game():
     net = AsyncMock()
     conductor = Conductor(quiz_source())
-    await conductor.new_session()
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
     net.publish.assert_called_with(Box(event='joined', user='mario'))
     net.send.assert_called_with('mario', Box(question='2+1?'))
-    await mario.challenge()
-    net.publish.assert_called_with(Box(event='challenging', user='mario'))
+    net.reset_mock()
+    await mario.challenge_and_answer(2)
     net.send.assert_called_with('mario', Box(action='reply', answers=['1', '2', '3', '4']))
-    await mario.answer(2)
-    net.publish.assert_called_with(Box(event='winner', user='mario'))
-    await mario.exit()
+    net.publish.assert_has_calls([
+        call(Box(event='challenging', user='mario')),
+        call(Box(event='winner', user='mario'))
+    ])
 
 
 async def test_unjoin_user_after_failed_answer():
     net = AsyncMock()
     conductor = Conductor(quiz_source())
-    await conductor.new_session()
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
-    await mario.challenge()
-    await mario.answer(1)
+    await mario.challenge_and_answer(1)
     net.publish.assert_called_with(Box(event='removed', user='mario'))
-    net.reset_mock()
-    await mario.answer(2)
-    net.publish.assert_not_called()
+
+
+async def test_unjoin_user_after_answer_timeout():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    await mario.enter()
+    await mario.join()
+    await mario.challenge_without_answer()
+    net.publish.assert_called_with(Box(event='removed', user='mario'))
 
 
 def quiz_source():

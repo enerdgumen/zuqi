@@ -1,4 +1,7 @@
+import asyncio
 from box import Box
+
+from conductor.config import challenge_timeout_seconds
 
 
 class Session:
@@ -28,8 +31,9 @@ class Conductor:
         quiz = await self.quiz_source.next()
         self.session = Session(quiz)
 
-    async def on_enter(self, network, user):
-        pass
+    async def on_enter(self, _network, _user):
+        if not self.session:
+            await self.new_session()
 
     async def on_message(self, network, message):
         if not self.session.is_user_present(message.source) and message.payload.action == 'join':
@@ -38,8 +42,6 @@ class Conductor:
             return
         if message.payload.action == 'challenge':
             return await self._handle_challenge(network, message)
-        if message.payload.action == 'answer':
-            return await self._handle_answer(network, message)
 
     async def _handle_join(self, network, message):
         await network.send(message.source, Box(question=self.session.quiz.question))
@@ -49,14 +51,26 @@ class Conductor:
     async def _handle_challenge(self, network, message):
         await network.send(message.source, Box(action='reply', answers=self.session.quiz.answers))
         await network.publish(Box(event='challenging', user=message.source))
+        try:
+            message = await network.receive(message.source, timeout=challenge_timeout_seconds)
+            await self._handle_answer(network, message)
+        except asyncio.TimeoutError:
+            await self._handle_bad_answer(network, message)
 
     async def _handle_answer(self, network, message):
         ok = message.payload.answer == self.session.quiz.answer
         if ok:
-            await network.publish(Box(event='winner', user=message.source))
+            await self._handle_good_answer(network, message)
         else:
-            self.session.remove_user(message.source)
-            await network.publish(Box(event='removed', user=message.source))
+            await self._handle_bad_answer(network, message)
+
+    async def _handle_good_answer(self, network, message):
+        await network.publish(Box(event='winner', user=message.source))
+        await self.new_session()
+
+    async def _handle_bad_answer(self, network, message):
+        self.session.remove_user(message.source)
+        await network.publish(Box(event='removed', user=message.source))
 
     async def on_exit(self, network, user):
         pass
