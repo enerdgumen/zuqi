@@ -42,7 +42,7 @@ async def test_single_player_game():
     net.publish.assert_called_with(Box(event='joined', user='mario'))
     net.send.assert_called_with('mario', Box(question='2+1?'))
     net.reset_mock()
-    await mario.challenge(answer=2)
+    await mario.challenge(answer=quiz_source.good_answer)
     net.send.assert_called_with('mario', Box(action='reply', answers=['1', '2', '3', '4']))
     net.publish.assert_has_calls([
         call(Box(event='challenging', user='mario')),
@@ -71,7 +71,7 @@ async def test_notify_other_users_after_challenge():
     await luigi.enter()
     await mario.join()
     await luigi.join()
-    await mario.challenge(answer=2)
+    await mario.challenge(answer=quiz_source.good_answer)
     net.publish.assert_any_call(Box(event='challenging', user='mario'))
 
 
@@ -81,7 +81,7 @@ async def test_unjoin_user_after_failed_answer():
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
-    await mario.challenge(answer=1)
+    await mario.challenge(answer=quiz_source.bad_answer)
     net.publish.assert_called_with(Box(event='loser', user='mario'))
 
 
@@ -101,9 +101,9 @@ async def test_user_cannot_retry_challenge_after_fail():
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
-    await mario.challenge(answer=1)
+    await mario.challenge(answer=quiz_source.bad_answer)
     net.publish.reset_mock()
-    await mario.challenge(answer=2)
+    await mario.challenge(answer=quiz_source.good_answer)
     net.publish.assert_not_called()
 
 
@@ -117,7 +117,7 @@ async def test_ignore_other_challenges_during_challenge():
     await mario.join()
     await luigi.join()
     net.publish.reset_mock()
-    await mario.challenge(answer=2, meanwhile=lambda: luigi.challenge(answer=2))
+    await mario.challenge(answer=quiz_source.good_answer, meanwhile=lambda: luigi.challenge(answer=quiz_source.good_answer))
     net.publish.assert_has_calls([
         call(Box(event='challenging', user='mario')),
         call(Box(event='winner', user='mario'))
@@ -133,9 +133,9 @@ async def test_other_user_can_try_after_failed_challenge():
     await luigi.enter()
     await mario.join()
     await luigi.join()
-    await mario.challenge(answer=1)
+    await mario.challenge(answer=quiz_source.bad_answer)
     net.publish.reset_mock()
-    await luigi.challenge(answer=2)
+    await luigi.challenge(answer=quiz_source.good_answer)
     net.publish.assert_has_calls([
         call(Box(event='challenging', user='luigi')),
         call(Box(event='winner', user='luigi'))
@@ -148,11 +148,16 @@ async def test_notify_winner():
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
-    await mario.challenge(answer=2)
+    await mario.challenge(answer=quiz_source.good_answer)
     net.publish.assert_called_with(Box(event='winner', user='mario'))
 
 
 def quiz_source():
     mock = Mock()
-    mock.next = AsyncMock(return_value=Box(question='2+1?', answers=['1', '2', '3', '4'], answer=2))
+    quiz = Box(question='2+1?', answers=['1', '2', '3', '4'], answer=quiz_source.good_answer)
+    mock.next = AsyncMock(return_value=quiz)
     return mock
+
+
+quiz_source.bad_answer = 1
+quiz_source.good_answer = 2
