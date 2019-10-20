@@ -84,7 +84,7 @@ class Conductor:
 
     async def _handle_bad_answer(self, network, message):
         self.session.remove_user(message.source)
-        await network.publish(Box(event='removed', user=message.source))
+        await network.publish(Box(event='loser', user=message.source))
 
     async def on_exit(self, network, user):
         pass

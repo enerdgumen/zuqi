@@ -82,7 +82,7 @@ async def test_unjoin_user_after_failed_answer():
     await mario.enter()
     await mario.join()
     await mario.challenge(answer=1)
-    net.publish.assert_called_with(Box(event='removed', user='mario'))
+    net.publish.assert_called_with(Box(event='loser', user='mario'))
 
 
 async def test_unjoin_user_after_answer_timeout():
@@ -92,7 +92,7 @@ async def test_unjoin_user_after_answer_timeout():
     await mario.enter()
     await mario.join()
     await mario.challenge(answer=None)
-    net.publish.assert_called_with(Box(event='removed', user='mario'))
+    net.publish.assert_called_with(Box(event='loser', user='mario'))
 
 
 async def test_ignore_other_challenges_during_challenge():
