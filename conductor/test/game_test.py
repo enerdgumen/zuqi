@@ -95,6 +95,18 @@ async def test_unjoin_user_after_answer_timeout():
     net.publish.assert_called_with(Box(event='loser', user='mario'))
 
 
+async def test_user_cannot_retry_challenge_after_fail():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    await mario.enter()
+    await mario.join()
+    await mario.challenge(answer=1)
+    net.publish.reset_mock()
+    await mario.challenge(answer=2)
+    net.publish.assert_not_called()
+
+
 async def test_ignore_other_challenges_during_challenge():
     net = AsyncMock()
     conductor = Conductor(quiz_source())
