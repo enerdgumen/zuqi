@@ -8,6 +8,7 @@ class Session:
     def __init__(self, quiz):
         self.quiz = quiz
         self.users = {}
+        self.challenging = None
 
     def add_user(self, user):
         self.users[user] = True
@@ -20,6 +21,15 @@ class Session:
 
     def is_user_active(self, user):
         return self.users.get(user, False)
+
+    def is_challenging(self):
+        return self.challenging
+
+    def begin_challenge(self, user):
+        self.challenging = user
+
+    def end_challenge(self):
+        self.challenging = None
 
 
 class Conductor:
@@ -40,7 +50,7 @@ class Conductor:
             return await self._handle_join(network, message)
         if not self.session.is_user_active(message.source):
             return
-        if message.payload.action == 'challenge':
+        if message.payload.action == 'challenge' and not self.session.is_challenging():
             return await self._handle_challenge(network, message)
 
     async def _handle_join(self, network, message):
@@ -49,13 +59,17 @@ class Conductor:
         self.session.add_user(message.source)
 
     async def _handle_challenge(self, network, message):
-        await network.send(message.source, Box(action='reply', answers=self.session.quiz.answers))
-        await network.publish(Box(event='challenging', user=message.source))
         try:
-            message = await network.receive(message.source, timeout=challenge_timeout_seconds)
-            await self._handle_answer(network, message)
-        except asyncio.TimeoutError:
-            await self._handle_bad_answer(network, message)
+            self.session.begin_challenge(message.source)
+            await network.send(message.source, Box(action='reply', answers=self.session.quiz.answers))
+            await network.publish(Box(event='challenging', user=message.source))
+            try:
+                message = await network.receive(message.source, timeout=challenge_timeout_seconds)
+                await self._handle_answer(network, message)
+            except asyncio.TimeoutError:
+                await self._handle_bad_answer(network, message)
+        finally:
+            self.session.end_challenge()
 
     async def _handle_answer(self, network, message):
         ok = message.payload.answer == self.session.quiz.answer
