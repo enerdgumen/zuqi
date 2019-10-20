@@ -50,6 +50,31 @@ async def test_single_player_game():
     ])
 
 
+async def test_notify_other_users_after_join():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    luigi = UserEmulator(conductor=conductor, net=net, uid='luigi')
+    await mario.enter()
+    await luigi.enter()
+    await mario.join()
+    await luigi.join()
+    net.publish.assert_called_with(Box(event='joined', user='luigi'))
+
+
+async def test_notify_other_users_after_challenge():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    luigi = UserEmulator(conductor=conductor, net=net, uid='luigi')
+    await mario.enter()
+    await luigi.enter()
+    await mario.join()
+    await luigi.join()
+    await mario.challenge_and_answer(2)
+    net.publish.assert_any_call(Box(event='challenging', user='mario'))
+
+
 async def test_unjoin_user_after_failed_answer():
     net = AsyncMock()
     conductor = Conductor(quiz_source())
@@ -68,6 +93,16 @@ async def test_unjoin_user_after_answer_timeout():
     await mario.join()
     await mario.challenge_without_answer()
     net.publish.assert_called_with(Box(event='removed', user='mario'))
+
+
+async def test_notify_winner():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    await mario.enter()
+    await mario.join()
+    await mario.challenge_and_answer(2)
+    net.publish.assert_called_with(Box(event='winner', user='mario'))
 
 
 def quiz_source():
