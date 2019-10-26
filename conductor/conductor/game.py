@@ -22,6 +22,9 @@ class Session:
     def is_user_active(self, user):
         return self.users.get(user, False)
 
+    def is_any_user_active(self):
+        return any(self.users.values())
+
     def is_challenging(self):
         return self.challenging
 
@@ -87,13 +90,17 @@ class Conductor:
             await self._handle_bad_answer(network, message)
 
     async def _handle_good_answer(self, network, message):
-        await network.publish(messages.won(message.source))
-        await self.new_session()
+        await self._end_game(network, winner=message.source)
 
     async def _handle_bad_answer(self, network, message):
         self.session.remove_user(message.source)
         await network.publish(messages.lost(message.source))
-        # TODO: handle end game
+        if not self.session.is_any_user_active():
+            await self._end_game(network, winner=None)
+
+    async def _end_game(self, network, winner):
+        await network.publish(messages.end(winner))
+        await self.new_session()
 
     async def on_exit(self, network, user):
         pass
