@@ -55,8 +55,17 @@ class Conductor:
 
     async def _handle_join(self, network, message):
         await network.send(message.source, Box(question=self.session.quiz.question))
+        await self._replay_events(network, message)
         await network.publish(Box(event='joined', user=message.source))
         self.session.add_user(message.source)
+
+    async def _replay_events(self, network, message):
+        for user, active in self.session.users.items():
+            await network.send(message.source, Box(event='joined', user=user))
+            if not active:
+                await network.send(message.source, Box(event='loser', user=user))
+        if self.session.challenging:
+            await network.send(message.source, Box(event='challenging', user=self.session.challenging))
 
     async def _handle_challenge(self, network, message):
         try:
@@ -85,6 +94,7 @@ class Conductor:
     async def _handle_bad_answer(self, network, message):
         self.session.remove_user(message.source)
         await network.publish(Box(event='loser', user=message.source))
+        # TODO: handle end game
 
     async def on_exit(self, network, user):
         pass

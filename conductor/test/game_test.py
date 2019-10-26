@@ -117,7 +117,8 @@ async def test_ignore_other_challenges_during_challenge():
     await mario.join()
     await luigi.join()
     net.publish.reset_mock()
-    await mario.challenge(answer=quiz_source.good_answer, meanwhile=lambda: luigi.challenge(answer=quiz_source.good_answer))
+    await mario.challenge(answer=quiz_source.good_answer,
+                          meanwhile=lambda: luigi.challenge(answer=quiz_source.good_answer))
     net.publish.assert_has_calls([
         call(Box(event='challenging', user='mario')),
         call(Box(event='winner', user='mario'))
@@ -150,6 +151,28 @@ async def test_notify_winner():
     await mario.join()
     await mario.challenge(answer=quiz_source.good_answer)
     net.publish.assert_called_with(Box(event='winner', user='mario'))
+
+
+async def test_conductor_reply_events_when_new_user_join():
+    net = AsyncMock()
+    conductor = Conductor(quiz_source())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    luigi = UserEmulator(conductor=conductor, net=net, uid='luigi')
+    peach = UserEmulator(conductor=conductor, net=net, uid='peach')
+    await mario.enter()
+    await luigi.enter()
+    await mario.join()
+    await luigi.join()
+    await peach.enter()
+    await mario.challenge(answer=quiz_source.bad_answer)
+    net.send.reset_mock()
+    await luigi.challenge(answer=quiz_source.good_answer, meanwhile=lambda: peach.join())
+    net.send.assert_has_calls([
+        call('peach', Box(event='joined', user='mario')),
+        call('peach', Box(event='loser', user='mario')),
+        call('peach', Box(event='joined', user='luigi')),
+        call('peach', Box(event='challenging', user='luigi')),
+    ])
 
 
 def quiz_source():
