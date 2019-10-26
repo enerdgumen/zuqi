@@ -2,11 +2,11 @@ from box import Box
 
 
 def is_join_request(message):
-    return message.payload.action == 'join'
+    return message.body.action == 'join'
 
 
 def is_challenge_request(message):
-    return message.payload.action == 'challenge'
+    return message.body.action == 'challenge'
 
 
 def question(text):

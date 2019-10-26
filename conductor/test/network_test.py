@@ -17,7 +17,7 @@ async def test_enter_event(aiohttp_client):
 
 async def test_send(aiohttp_client):
     async def echo(net, message):
-        await net.send(message.source, message.payload)
+        await net.send(message.user, message.body)
 
     network = Network(on_message=echo)
     client = await aiohttp_client(application(network))
@@ -29,7 +29,7 @@ async def test_send(aiohttp_client):
 
 async def test_publish(aiohttp_client):
     async def broadcast_echo(net, message):
-        await net.publish(message.payload)
+        await net.publish(message.body)
 
     network = Network(on_message=broadcast_echo)
     client = await aiohttp_client(application(network))

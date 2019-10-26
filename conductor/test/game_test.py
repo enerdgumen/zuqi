@@ -19,18 +19,18 @@ class UserEmulator:
         await self.conductor.on_enter(self.net, self.uid)
 
     async def join(self):
-        await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='join')))
+        await self.conductor.on_message(self.net, Message(user=self.uid, body=Box(action='join')))
 
     async def challenge(self, answer, meanwhile=None):
         async def receive(*_args, **_kwargs):
             if meanwhile:
                 await meanwhile()
             if answer:
-                return Message(source=self.uid, payload=Box(answer=answer))
+                return Message(user=self.uid, body=Box(answer=answer))
             raise asyncio.TimeoutError()
 
         self.net.receive = receive
-        await self.conductor.on_message(self.net, Message(source=self.uid, payload=Box(action='challenge')))
+        await self.conductor.on_message(self.net, Message(user=self.uid, body=Box(action='challenge')))
 
     async def exit(self):
         await self.conductor.on_exit(self.net, self.uid)
