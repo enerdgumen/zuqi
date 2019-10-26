@@ -170,8 +170,6 @@ async def test_conductor_reply_events_when_new_user_join():
     net.send.reset_mock()
     await luigi.challenge(answer=quiz_source.good_answer, meanwhile=lambda: peach.join())
     net.send.assert_has_calls([
-        call('peach', messages.joined('mario')),
-        call('peach', messages.lost('mario')),
         call('peach', messages.joined('luigi')),
         call('peach', messages.challenged('luigi')),
     ])

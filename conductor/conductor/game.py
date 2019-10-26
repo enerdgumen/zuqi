@@ -61,9 +61,8 @@ class Conductor:
 
     async def _replay_events(self, network, message):
         for user, active in self.session.users.items():
-            await network.send(message.source, messages.joined(user))
-            if not active:
-                await network.send(message.source, messages.lost(user))
+            if active:
+                await network.send(message.source, messages.joined(user))
         if self.session.challenging:
             await network.send(message.source, messages.challenged(self.session.challenging))
 
