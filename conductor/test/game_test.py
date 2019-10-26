@@ -1,6 +1,8 @@
 import asyncio
 from unittest.mock import Mock, AsyncMock, call
 from box import Box
+
+from conductor import messages
 from conductor.game import Conductor
 from conductor.network import Message
 
@@ -39,14 +41,14 @@ async def test_single_player_game():
     mario = UserEmulator(conductor=conductor, net=net, uid='mario')
     await mario.enter()
     await mario.join()
-    net.publish.assert_called_with(Box(event='joined', user='mario'))
-    net.send.assert_called_with('mario', Box(question='2+1?'))
+    net.publish.assert_called_with(messages.joined('mario'))
+    net.send.assert_called_with('mario', messages.question('2+1?'))
     net.reset_mock()
     await mario.challenge(answer=quiz_source.good_answer)
-    net.send.assert_called_with('mario', Box(action='reply', answers=['1', '2', '3', '4']))
+    net.send.assert_called_with('mario', messages.reply(['1', '2', '3', '4']))
     net.publish.assert_has_calls([
-        call(Box(event='challenging', user='mario')),
-        call(Box(event='winner', user='mario'))
+        call(messages.challenged('mario')),
+        call(messages.won('mario'))
     ])
 
 
@@ -59,7 +61,7 @@ async def test_notify_other_users_after_join():
     await luigi.enter()
     await mario.join()
     await luigi.join()
-    net.publish.assert_called_with(Box(event='joined', user='luigi'))
+    net.publish.assert_called_with(messages.joined('luigi'))
 
 
 async def test_notify_other_users_after_challenge():
@@ -72,7 +74,7 @@ async def test_notify_other_users_after_challenge():
     await mario.join()
     await luigi.join()
     await mario.challenge(answer=quiz_source.good_answer)
-    net.publish.assert_any_call(Box(event='challenging', user='mario'))
+    net.publish.assert_any_call(messages.challenged('mario'))
 
 
 async def test_unjoin_user_after_failed_answer():
@@ -82,7 +84,7 @@ async def test_unjoin_user_after_failed_answer():
     await mario.enter()
     await mario.join()
     await mario.challenge(answer=quiz_source.bad_answer)
-    net.publish.assert_called_with(Box(event='loser', user='mario'))
+    net.publish.assert_called_with(messages.lost('mario'))
 
 
 async def test_unjoin_user_after_answer_timeout():
@@ -92,7 +94,7 @@ async def test_unjoin_user_after_answer_timeout():
     await mario.enter()
     await mario.join()
     await mario.challenge(answer=None)
-    net.publish.assert_called_with(Box(event='loser', user='mario'))
+    net.publish.assert_called_with(messages.lost('mario'))
 
 
 async def test_user_cannot_retry_challenge_after_fail():
@@ -120,8 +122,8 @@ async def test_ignore_other_challenges_during_challenge():
     await mario.challenge(answer=quiz_source.good_answer,
                           meanwhile=lambda: luigi.challenge(answer=quiz_source.good_answer))
     net.publish.assert_has_calls([
-        call(Box(event='challenging', user='mario')),
-        call(Box(event='winner', user='mario'))
+        call(messages.challenged('mario')),
+        call(messages.won('mario'))
     ])
 
 
@@ -138,8 +140,8 @@ async def test_other_user_can_try_after_failed_challenge():
     net.publish.reset_mock()
     await luigi.challenge(answer=quiz_source.good_answer)
     net.publish.assert_has_calls([
-        call(Box(event='challenging', user='luigi')),
-        call(Box(event='winner', user='luigi'))
+        call(messages.challenged('luigi')),
+        call(messages.won('luigi'))
     ])
 
 
@@ -150,7 +152,7 @@ async def test_notify_winner():
     await mario.enter()
     await mario.join()
     await mario.challenge(answer=quiz_source.good_answer)
-    net.publish.assert_called_with(Box(event='winner', user='mario'))
+    net.publish.assert_called_with(messages.won('mario'))
 
 
 async def test_conductor_reply_events_when_new_user_join():
@@ -168,10 +170,10 @@ async def test_conductor_reply_events_when_new_user_join():
     net.send.reset_mock()
     await luigi.challenge(answer=quiz_source.good_answer, meanwhile=lambda: peach.join())
     net.send.assert_has_calls([
-        call('peach', Box(event='joined', user='mario')),
-        call('peach', Box(event='loser', user='mario')),
-        call('peach', Box(event='joined', user='luigi')),
-        call('peach', Box(event='challenging', user='luigi')),
+        call('peach', messages.joined('mario')),
+        call('peach', messages.lost('mario')),
+        call('peach', messages.joined('luigi')),
+        call('peach', messages.challenged('luigi')),
     ])
 
 

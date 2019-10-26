@@ -1,6 +1,6 @@
 import asyncio
-from box import Box
 
+from conductor import messages
 from conductor.config import challenge_timeout_seconds
 
 
@@ -46,32 +46,32 @@ class Conductor:
             await self.new_session()
 
     async def on_message(self, network, message):
-        if not self.session.is_user_present(message.source) and message.payload.action == 'join':
+        if messages.is_join_request(message) and not self.session.is_user_present(message.source):
             return await self._handle_join(network, message)
         if not self.session.is_user_active(message.source):
             return
-        if message.payload.action == 'challenge' and not self.session.is_challenging():
+        if messages.is_challenge_request(message) and not self.session.is_challenging():
             return await self._handle_challenge(network, message)
 
     async def _handle_join(self, network, message):
-        await network.send(message.source, Box(question=self.session.quiz.question))
+        await network.send(message.source, messages.question(self.session.quiz.question))
         await self._replay_events(network, message)
-        await network.publish(Box(event='joined', user=message.source))
+        await network.publish(messages.joined(message.source))
         self.session.add_user(message.source)
 
     async def _replay_events(self, network, message):
         for user, active in self.session.users.items():
-            await network.send(message.source, Box(event='joined', user=user))
+            await network.send(message.source, messages.joined(user))
             if not active:
-                await network.send(message.source, Box(event='loser', user=user))
+                await network.send(message.source, messages.lost(user))
         if self.session.challenging:
-            await network.send(message.source, Box(event='challenging', user=self.session.challenging))
+            await network.send(message.source, messages.challenged(self.session.challenging))
 
     async def _handle_challenge(self, network, message):
         try:
             self.session.begin_challenge(message.source)
-            await network.send(message.source, Box(action='reply', answers=self.session.quiz.answers))
-            await network.publish(Box(event='challenging', user=message.source))
+            await network.send(message.source, messages.reply(self.session.quiz.answers))
+            await network.publish(messages.challenged(message.source))
             try:
                 message = await network.receive(message.source, timeout=challenge_timeout_seconds)
                 await self._handle_answer(network, message)
@@ -88,12 +88,12 @@ class Conductor:
             await self._handle_bad_answer(network, message)
 
     async def _handle_good_answer(self, network, message):
-        await network.publish(Box(event='winner', user=message.source))
+        await network.publish(messages.won(message.source))
         await self.new_session()
 
     async def _handle_bad_answer(self, network, message):
         self.session.remove_user(message.source)
-        await network.publish(Box(event='loser', user=message.source))
+        await network.publish(messages.lost(message.source))
         # TODO: handle end game
 
     async def on_exit(self, network, user):
