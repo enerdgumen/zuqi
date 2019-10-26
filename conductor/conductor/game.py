@@ -50,51 +50,51 @@ class Conductor:
 
     async def on_message(self, network, message):
         if messages.is_join_request(message) and not self.session.is_user_present(message.user):
-            return await self._handle_join(network, message)
+            return await self._handle_join(network, message.user)
         if not self.session.is_user_alive(message.user):
             return
         if messages.is_challenge_request(message) and not self.session.is_challenging():
-            return await self._handle_challenge(network, message)
+            return await self._handle_challenge(network, message.user)
 
-    async def _handle_join(self, network, message):
-        await network.send(message.user, messages.question(self.session.quiz.question))
-        await self._replay_events(network, message)
-        await network.publish(messages.joined(message.user))
-        self.session.add_user(message.user)
+    async def _handle_join(self, network, user):
+        await network.send(user, messages.question(self.session.quiz.question))
+        await self._replay_events(network, user)
+        await network.publish(messages.joined(user))
+        self.session.add_user(user)
 
-    async def _replay_events(self, network, message):
-        for user, active in self.session.users.items():
-            if active:
-                await network.send(message.user, messages.joined(user))
+    async def _replay_events(self, network, user):
+        for other_user, alive in self.session.users.items():
+            if alive:
+                await network.send(user, messages.joined(other_user))
         if self.session.challenging:
-            await network.send(message.user, messages.challenged(self.session.challenging))
+            await network.send(user, messages.challenged(self.session.challenging))
 
-    async def _handle_challenge(self, network, message):
+    async def _handle_challenge(self, network, user):
         try:
-            self.session.begin_challenge(message.user)
-            await network.send(message.user, messages.reply(self.session.quiz.answers))
-            await network.publish(messages.challenged(message.user))
+            self.session.begin_challenge(user)
+            await network.send(user, messages.reply(self.session.quiz.answers))
+            await network.publish(messages.challenged(user))
             try:
-                message = await network.receive(message.user, timeout=challenge_timeout_seconds)
-                await self._handle_answer(network, message)
+                answer = await network.receive(user, timeout=challenge_timeout_seconds)
+                await self._handle_answer(network, answer)
             except asyncio.TimeoutError:
-                await self._handle_bad_answer(network, message)
+                await self._handle_bad_answer(network, user)
         finally:
             self.session.end_challenge()
 
     async def _handle_answer(self, network, message):
         ok = message.body.answer == self.session.quiz.answer
         if ok:
-            await self._handle_good_answer(network, message)
+            await self._handle_good_answer(network, message.user)
         else:
-            await self._handle_bad_answer(network, message)
+            await self._handle_bad_answer(network, message.user)
 
-    async def _handle_good_answer(self, network, message):
-        await self._end_game(network, winner=message.user)
+    async def _handle_good_answer(self, network, user):
+        await self._end_game(network, winner=user)
 
-    async def _handle_bad_answer(self, network, message):
-        self.session.kill_user(message.user)
-        await network.publish(messages.lost(message.user))
+    async def _handle_bad_answer(self, network, user):
+        self.session.kill_user(user)
+        await network.publish(messages.lost(user))
         if not self.session.is_any_user_alive():
             await self._end_game(network, winner=None)
 
@@ -103,4 +103,4 @@ class Conductor:
         await self.new_session()
 
     async def on_exit(self, network, user):
-        pass
+        await self._handle_bad_answer(network, user)

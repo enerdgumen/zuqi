@@ -98,6 +98,19 @@ async def test_unjoin_user_after_answer_timeout():
     net.publish.assert_any_call(messages.lost('mario'))
 
 
+async def test_user_lose_on_exit():
+    net = AsyncMock()
+    conductor = Conductor(MockQuizSource())
+    mario = UserEmulator(conductor=conductor, net=net, uid='mario')
+    luigi = UserEmulator(conductor=conductor, net=net, uid='luigi')
+    await mario.enter()
+    await luigi.enter()
+    await mario.join()
+    await luigi.join()
+    await mario.exit()
+    net.publish.assert_any_call(messages.lost('mario'))
+
+
 async def test_user_cannot_retry_challenge_after_fail():
     net = AsyncMock()
     conductor = Conductor(MockQuizSource())
