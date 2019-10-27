@@ -7,8 +7,8 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core/styles";
+import { useSnackbar } from "notistack";
 import { EnterExitAnimation } from "./Animations";
-import { Feedback } from "./Feedback";
 import * as api from "./Api";
 
 const useStyles = makeStyles(theme => ({
@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function WelcomePanel({ onEnter, entering, error }) {
+function WelcomePanel({ onEnter, entering }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState();
   const catchReturn = ev => {
@@ -66,28 +66,28 @@ function WelcomePanel({ onEnter, entering, error }) {
           )}
         </Box>
       </Box>
-      {error && <Feedback message={t(error.message)} />}
     </Paper>
   );
 }
 
 function Welcome() {
+  const { t } = useTranslation();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [entering, setEntering] = useState(false);
-  const [error, setError] = useState(null);
   const handleEnter = async username => {
     setEntering(true);
-    setError(null);
+    closeSnackbar();
     try {
       await api.enter(username);
     } catch (err) {
-      setError(err);
+      enqueueSnackbar(t(err.message), {
+        variant: "info"
+      });
     } finally {
       setEntering(false);
     }
   };
-  return (
-    <WelcomePanel onEnter={handleEnter} entering={entering} error={error} />
-  );
+  return <WelcomePanel onEnter={handleEnter} entering={entering} />;
 }
 
 const WelcomeAnimated = () => (
