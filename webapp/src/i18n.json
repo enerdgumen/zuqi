@@ -1,0 +1,15 @@
+{
+  "en": {
+    "translation": {
+      "usernameNotAvailable": "Username not available!"
+    }
+  },
+  "it": {
+    "translation": {
+      "Enter": "Entra",
+      "Username": "Nome utente",
+      "usernameNotAvailable": "Nome utente non disponibile!",
+      "Welcome to Quzi": "Benvenuto in Quzi"
+    }
+  }
+}
