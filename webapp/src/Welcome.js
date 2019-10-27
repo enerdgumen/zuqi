@@ -7,6 +7,7 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core/styles";
+import { EnterExitAnimation } from "./Animations";
 import { Feedback } from "./Feedback";
 import * as api from "./Api";
 
@@ -50,7 +51,6 @@ function WelcomePanel({ onEnter, entering, error }) {
           label={t("Username")}
           onChange={e => setUsername(e.target.value)}
           onKeyPress={catchReturn}
-          error={Boolean(error)}
         />
         <Box className={classes.enterContainer}>
           <Button
@@ -90,4 +90,10 @@ function Welcome() {
   );
 }
 
-export { Welcome };
+const WelcomeAnimated = () => (
+  <EnterExitAnimation>
+    <Welcome />
+  </EnterExitAnimation>
+);
+
+export { WelcomeAnimated as Welcome };
