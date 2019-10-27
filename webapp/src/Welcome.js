@@ -43,7 +43,7 @@ function WelcomePanel({ onEnter, entering, error }) {
   const classes = useStyles();
   return (
     <Paper className={classes.root}>
-      <Typography variant="h4">{t("Welcome to Quzi")}</Typography>
+      <Typography variant="h4">{t("Welcome to Zuqi")}</Typography>
       <Box className={classes.row}>
         <TextField
           autoFocus={true}
