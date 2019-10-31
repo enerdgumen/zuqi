@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function WelcomePanel({ onEnter, entering }) {
+export function WelcomePanel({ onEnter, entering }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState();
   const catchReturn = ev => {
@@ -70,7 +70,7 @@ function WelcomePanel({ onEnter, entering }) {
   );
 }
 
-function Welcome() {
+export function Welcome() {
   const { t } = useTranslation();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [entering, setEntering] = useState(false);
@@ -90,10 +90,10 @@ function Welcome() {
   return <WelcomePanel onEnter={handleEnter} entering={entering} />;
 }
 
-const WelcomeAnimated = () => (
+export const WelcomeAnimated = () => (
   <EnterExitAnimation>
     <Welcome />
   </EnterExitAnimation>
 );
 
-export { WelcomeAnimated as Welcome };
+export default WelcomeAnimated;
