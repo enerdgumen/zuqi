@@ -9,7 +9,6 @@ i18n
   .init({
     resources,
     fallbackLng: "en",
-    debug: true,
     detection: {
       order: ['querystring', 'path', 'subdomain', 'localStorage', 'navigator'],
     },
