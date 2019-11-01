@@ -8,7 +8,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Checkbox from "@material-ui/core/Checkbox";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles  } from "@material-ui/core/styles";
 import { green, grey, red } from "@material-ui/core/colors";
 import { LoadingButton } from "./LoadingButton";
 
@@ -16,65 +16,94 @@ const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(3)
   },
-  challangeButton: {
-    marginTop: theme.spacing(2)
+  question: {
+    marginBottom: theme.spacing(2)
+  },
+  answer: {
+    height: theme.spacing(5),
+    alignItems: 'center'
   },
   greenCheckbox: {
     color: green[600]
   },
   redCheckbox: {
     color: red[700]
+  },
+  answerProgress: {
+    color: grey[700]
   }
 }));
 
-export function QuestionPanel({
-  question,
-  onChallenge,
-  disabled,
-  challenging
-}) {
+export function ChallengeButton({ onChallenge, disabled, challenging }) {
+  const { t } = useTranslation();
+  return (
+    <LoadingButton
+      variant="contained"
+      color="primary"
+      disabled={disabled}
+      loading={challenging}
+      onClick={onChallenge}
+    >
+      {t("Challenge")}
+    </LoadingButton>
+  );
+}
+
+export function QuestionPanel({ question, children }) {
   const { t } = useTranslation();
   const classes = useStyles();
   return (
     <Paper className={classes.root}>
-      <Typography variant="h5">{t(question)}</Typography>
-      <LoadingButton
-        className={classes.challangeButton}
-        variant="contained"
-        color="primary"
-        disabled={disabled || challenging}
-        loading={!disabled && challenging}
-        onClick={onChallenge}
-      >
-        {t("Challenge")}
-      </LoadingButton>
+      <Typography className={classes.question} variant="h5">
+        {t(question)}
+      </Typography>
+      {children}
     </Paper>
   );
 }
 
-export function QuestionAnswers({ answers, onSelect, selection, status }) {
+export function QuestionAnswers({ answers, onSelect }) {
   return (
-    <List component="nav">
+    <List>
       {answers.map((answer, index) => {
-        const id = `answer-${index}`;
-        const isSelected = index === selection;
         return (
-          <ListItem key={id} button onClick={() => onSelect(index)}>
-            <ListItemIcon>
-              <QuestionIcon status={isSelected && status} />
-            </ListItemIcon>
-            <ListItemText id={id} primary={answer} />
-          </ListItem>
+          <QuestionAnswer
+            key={index}
+            index={index}
+            text={answer.text}
+            status={answer.status}
+            onSelect={onSelect}
+          />
         );
       })}
     </List>
   );
 }
 
+function QuestionAnswer({ index, text, status, onSelect }) {
+  const classes = useStyles();
+  const id = `answer-${index}`;
+  return (
+    <ListItem
+      key={id}
+      className={classes.answer}
+      button
+      onClick={() => onSelect(index)}
+    >
+      <ListItemIcon>
+        <QuestionIcon status={status} />
+      </ListItemIcon>
+      <ListItemText id={id} primary={text} />
+    </ListItem>
+  );
+}
+
 function QuestionIcon({ status }) {
-  const { greenCheckbox, redCheckbox } = useStyles();
+  const { greenCheckbox, redCheckbox, answerProgress } = useStyles();
   if (status === "loading") {
-    return <CircularProgress size={20} color={grey[900]} />;
+    return (
+      <CircularProgress size={18} className={answerProgress} />
+    );
   }
   if (status === "success" || status === "failure") {
     return (
