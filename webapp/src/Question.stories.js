@@ -23,6 +23,7 @@ export const WithAnswers = () => (
   <QuestionPanel question="What does the acronym CDN stand for in terms of networking?">
     <QuestionAnswers
       onSelect={action("Select")}
+      readOnly={boolean("Read only", false)}
       answers={object("Answers", [
         {
           text: "Content Delivery Network"

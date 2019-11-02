@@ -79,7 +79,7 @@ export function QuestionPanel({ question, children }) {
   );
 }
 
-export function QuestionAnswers({ answers, onSelect }) {
+export function QuestionAnswers({ answers, readOnly, onSelect }) {
   return (
     <List>
       {answers.map((answer, index) => {
@@ -89,7 +89,7 @@ export function QuestionAnswers({ answers, onSelect }) {
             index={index}
             text={answer.text}
             status={answer.status}
-            onSelect={onSelect}
+            onSelect={readOnly ? undefined : onSelect}
           />
         );
       })}
@@ -109,7 +109,7 @@ function QuestionAnswer({ index, text, status, onSelect }) {
         [classes.answerFailure]: status === failureStatus
       })}
       button
-      onClick={() => onSelect(index)}
+      onClick={onSelect && (() => onSelect(index))}
     >
       <ListItemIcon>
         <QuestionIcon status={status} />
