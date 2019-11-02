@@ -22,6 +22,7 @@ export const WithChallenge = () => (
 export const WithAnswers = () => (
   <QuestionPanel question="What does the acronym CDN stand for in terms of networking?">
     <QuestionAnswers
+      onSelect={action("Select")}
       answers={object("Answers", [
         {
           text: "Content Delivery Network"

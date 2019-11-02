@@ -8,9 +8,10 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Checkbox from "@material-ui/core/Checkbox";
-import { makeStyles  } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import { green, grey, red } from "@material-ui/core/colors";
 import { LoadingButton } from "./LoadingButton";
+import clsx from "clsx";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -21,7 +22,19 @@ const useStyles = makeStyles(theme => ({
   },
   answer: {
     height: theme.spacing(5),
-    alignItems: 'center'
+    alignItems: "center"
+  },
+  answerSuccess: {
+    backgroundColor: green[50],
+    "&:hover": {
+      backgroundColor: green[100]
+    }
+  },
+  answerFailure: {
+    backgroundColor: red[50],
+    "&:hover": {
+      backgroundColor: red[100]
+    }
   },
   greenCheckbox: {
     color: green[600]
@@ -33,6 +46,10 @@ const useStyles = makeStyles(theme => ({
     color: grey[700]
   }
 }));
+
+const successStatus = "success";
+const failureStatus = "failure";
+const loadingStatus = "loading";
 
 export function ChallengeButton({ onChallenge, disabled, challenging }) {
   const { t } = useTranslation();
@@ -86,7 +103,11 @@ function QuestionAnswer({ index, text, status, onSelect }) {
   return (
     <ListItem
       key={id}
-      className={classes.answer}
+      className={clsx({
+        [classes.answer]: true,
+        [classes.answerSuccess]: status === successStatus,
+        [classes.answerFailure]: status === failureStatus
+      })}
       button
       onClick={() => onSelect(index)}
     >
@@ -100,20 +121,19 @@ function QuestionAnswer({ index, text, status, onSelect }) {
 
 function QuestionIcon({ status }) {
   const { greenCheckbox, redCheckbox, answerProgress } = useStyles();
-  if (status === "loading") {
-    return (
-      <CircularProgress size={18} className={answerProgress} />
-    );
+  if (status === loadingStatus) {
+    return <CircularProgress size={18} className={answerProgress} />;
   }
-  if (status === "success" || status === "failure") {
+  if (status === successStatus || status === failureStatus) {
     return (
       <Checkbox
-        className={status === "success" ? greenCheckbox : redCheckbox}
+        className={status === successStatus ? greenCheckbox : redCheckbox}
         color="default"
         edge="start"
         checked={true}
+        disableRipple
       />
     );
   }
-  return <Checkbox edge="start" checked={false} />;
+  return <Checkbox edge="start" checked={false} disableRipple />;
 }
