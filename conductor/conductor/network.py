@@ -22,10 +22,11 @@ class Network:
     async def __call__(self, request):
         ws = web.WebSocketResponse()
         ws_ready = ws.can_prepare(request)
+        user = request.query['uid']
         if not ws_ready.ok:
             raise web.HTTPMethodNotAllowed()
         await ws.prepare(request)
-        user = self.registry.register(ws)
+        self.registry.register(ws, user)
         await self.on_enter(self, user)
         while True:
             msg = await ws.receive()
@@ -76,12 +77,10 @@ class SocketRegistry:
     def __init__(self):
         self.sockets = {}
 
-    def register(self, ws):
-        user = str(uuid4())
-        self.sockets[user] = ws
-        logging.debug('%s: registered socket', user)
-        return user
+    def register(self, ws, uid):
+        self.sockets[uid] = ws
+        logging.debug('%s: registered socket', uid)
 
-    def unregister(self, user):
-        del self.sockets[user]
-        logging.debug('%s: unregistered socket', user)
+    def unregister(self, uid):
+        del self.sockets[uid]
+        logging.debug('%s: unregistered socket', uid)
