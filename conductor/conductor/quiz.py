@@ -1,7 +1,7 @@
 import aiohttp
+import html
 from box import Box
 from conductor.config import trivia_fetch_size, trivia_max_fetch_tentatives
-
 
 TOKEN_NOT_FOUND = 3
 TOKEN_EMPTY = 3
@@ -32,8 +32,8 @@ class OpenTriviaQuizSource:
                 self.tentative = 0
                 return [
                     Box(
-                        question=result.question,
-                        answers=[result.correct_answer] + result.incorrect_answers,
+                        question=html.unescape(result.question),
+                        answers=[html.unescape(it) for it in [result.correct_answer] + result.incorrect_answers],
                         answer=0
                     )
                     for result in body.results
