@@ -7,3 +7,5 @@ with env.prefixed("CONDUCTOR_"):
     port = env.int('PORT')
     log_level = env('LOG_LEVEL')
     challenge_timeout_seconds = env.int('CHALLENGE_TIMEOUT_SECONDS')
+    trivia_max_fetch_tentatives = env.int('TRIVIA_MAX_FETCH_TENTATIVES')
+    trivia_fetch_size = env.int('TRIVIA_FETCH_SIZE')
