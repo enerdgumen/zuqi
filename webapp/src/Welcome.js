@@ -8,7 +8,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useSnackbar } from "notistack";
 import { EnterExitAnimation } from "./Animations";
 import { LoadingButton } from "./LoadingButton";
-import * as api from "./Api";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -49,7 +48,7 @@ export function WelcomePanel({ onEnter, entering }) {
           color="primary"
           disabled={!username}
           loading={entering}
-          onClick={onEnter}
+          onClick={() => onEnter(username)}
         >
           {t("Enter")}
         </LoadingButton>
@@ -58,7 +57,7 @@ export function WelcomePanel({ onEnter, entering }) {
   );
 }
 
-export function Welcome() {
+export function Welcome({ onEnter }) {
   const { t } = useTranslation();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [entering, setEntering] = useState(false);
@@ -66,7 +65,7 @@ export function Welcome() {
     setEntering(true);
     closeSnackbar();
     try {
-      await api.enter(username);
+      await onEnter(username);
     } catch (err) {
       enqueueSnackbar(t(err.message), {
         variant: "info"
@@ -78,10 +77,10 @@ export function Welcome() {
   return <WelcomePanel onEnter={handleEnter} entering={entering} />;
 }
 
-export const WelcomeAnimated = () => (
+export const WelcomeAnimated = ({ ...props }) => (
   <EnterExitAnimation>
-    <Welcome />
+    <Welcome {...props} />
   </EnterExitAnimation>
 );
 
-export default WelcomeAnimated;
+export default Welcome;

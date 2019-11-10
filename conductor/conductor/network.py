@@ -28,6 +28,14 @@ class Network:
         await ws.prepare(request)
         self.registry.register(ws, user)
         await self.on_enter(self, user)
+        try:
+            await self._listen_messages(user, ws)
+        finally:
+            self.registry.unregister(user)
+            await self.on_exit(self, user)
+        return ws
+
+    async def _listen_messages(self, user, ws):
         while True:
             msg = await ws.receive()
             logging.debug('%s: received %s', user, msg)
@@ -39,9 +47,6 @@ class Network:
                 break
             else:
                 logging.warning('unexpected message %s', msg.type)
-        self.registry.unregister(user)
-        await self.on_exit(self, user)
-        return ws
 
     async def _handle_message(self, user, msg):
         try:

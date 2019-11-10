@@ -6,7 +6,9 @@
   },
   "it": {
     "translation": {
+      "Challenge": "Sfida",
       "Enter": "Entra",
+      "Players": "Giocatori",
       "Username": "Nome utente",
       "usernameNotAvailable": "Nome utente non disponibile!",
       "Welcome to Zuqi": "Benvenuto in Zuqi"

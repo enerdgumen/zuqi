@@ -1,6 +1,8 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Avatar from "@material-ui/core/Avatar";
+import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -10,6 +12,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import { green, red, orange } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
 import CloseIcon from "@material-ui/icons/Close";
+import { Typography } from "@material-ui/core";
+import PeopleIcon from '@material-ui/icons/People';
 
 const statusChallenging = "challenging";
 const statusLoser = "loser";
@@ -23,8 +27,23 @@ const statusProps = {
 
 const useStyles = makeStyles(theme => ({
   root: {
-    maxWidth: 240,
-    backgroundColor: theme.palette.background.paper
+    minWidth: '12em',
+    maxWidth: '20em',
+    position: "fixed",
+    top: "50%",
+    left: '1em',
+    transform: "translate(0, -50%)"
+  },
+  title: {
+    marginTop: theme.spacing(1),
+    marginBottom: 0,
+    marginLeft: theme.spacing(3),
+    marginRight: theme.spacing(1),
+    '& svg': {
+      verticalAlign: 'middle',
+      position: 'relative',
+      top: -2
+    }
   },
   item: ({ color }) => ({
     backgroundColor: color && color[50]
@@ -43,11 +62,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function Players({ children }) {
+  const { t } = useTranslation();
   const classes = useStyles();
   return (
-    <List className={classes.root} dense>
-      {children}
-    </List>
+    <Paper square={true} elevation={1} className={classes.root}>
+      <Typography className={classes.title} variant="h6"><PeopleIcon /> {t('Players')}</Typography>
+      <List dense>{children}</List>
+    </Paper>
   );
 }
 

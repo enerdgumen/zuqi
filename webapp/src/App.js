@@ -1,16 +1,13 @@
 import React from "react";
 import { SnackbarProvider } from "./Snackbar";
-import { Center } from "./Layout";
 import { Theme } from "./Theme";
-import Welcome from "./Welcome";
+import Game from "./Game";
 
 function App() {
   return (
     <Theme>
       <SnackbarProvider>
-        <Center>
-          <Welcome />
-        </Center>
+        <Game />
       </SnackbarProvider>
     </Theme>
   );

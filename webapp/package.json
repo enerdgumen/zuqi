@@ -7,12 +7,14 @@
     "@material-ui/icons": "^4.5.1",
     "i18next": "^18.0.1",
     "i18next-browser-languagedetector": "^4.0.0",
+    "immer": "^5.0.0",
     "notistack": "^0.9.5",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-i18next": "^11.0.0",
     "react-pose": "^4.0.9",
-    "react-scripts": "3.2.0"
+    "react-scripts": "3.2.0",
+    "use-immer": "^0.3.5"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

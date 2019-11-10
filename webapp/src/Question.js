@@ -15,7 +15,9 @@ import clsx from "clsx";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(3)
+    padding: theme.spacing(3),
+    maxWidth: "50vw",
+    zIndex: 1
   },
   question: {
     marginBottom: theme.spacing(2)
@@ -51,13 +53,13 @@ const successStatus = "success";
 const failureStatus = "failure";
 const loadingStatus = "loading";
 
-export function ChallengeButton({ onChallenge, disabled, challenging }) {
+export function ChallengeButton({ onChallenge, challenging }) {
   const { t } = useTranslation();
   return (
     <LoadingButton
       variant="contained"
       color="primary"
-      disabled={disabled}
+      disabled={challenging}
       loading={challenging}
       onClick={onChallenge}
     >
@@ -79,25 +81,11 @@ export function QuestionPanel({ question, children }) {
   );
 }
 
-export function QuestionAnswers({ answers, readOnly, onSelect }) {
-  return (
-    <List>
-      {answers.map((answer, index) => {
-        return (
-          <QuestionAnswer
-            key={index}
-            index={index}
-            text={answer.text}
-            status={answer.status}
-            onSelect={readOnly ? undefined : onSelect}
-          />
-        );
-      })}
-    </List>
-  );
+export function QuestionAnswers({ children }) {
+  return <List>{children}</List>;
 }
 
-function QuestionAnswer({ index, text, status, onSelect }) {
+export function QuestionAnswer({ index, text, status, onSelect }) {
   const classes = useStyles();
   const id = `answer-${index}`;
   return (

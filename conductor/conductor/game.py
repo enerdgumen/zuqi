@@ -7,23 +7,27 @@ from conductor.config import challenge_timeout_seconds
 class Session:
     def __init__(self, quiz):
         self.quiz = quiz
-        self.users = {}
+        self.users = set()
+        self.dead_users = set()
         self.challenging = None
 
     def add_user(self, user):
-        self.users[user] = True
+        self.users.add(user)
+
+    def remove_user(self, user):
+        self.users.remove(user)
 
     def kill_user(self, user):
-        self.users[user] = False
+        self.dead_users.add(user)
 
     def is_user_present(self, user):
         return user in self.users
 
     def is_user_alive(self, user):
-        return self.users.get(user, False)
+        return user not in self.dead_users
 
     def is_any_user_alive(self):
-        return any(self.users.values())
+        return len(self.users) > len(self.dead_users)
 
     def is_challenging(self):
         return self.challenging
@@ -34,6 +38,11 @@ class Session:
     def end_challenge(self):
         self.challenging = None
 
+    def new_quiz(self, quiz):
+        self.quiz = quiz
+        self.challenging = None
+        self.dead_users = set()
+
 
 class Conductor:
     def __init__(self, quiz_source):
@@ -42,30 +51,30 @@ class Conductor:
 
     async def new_session(self):
         quiz = await self.quiz_source.next()
-        self.session = Session(quiz)
+        if self.session:
+            self.session.new_quiz(quiz)
+        else:
+            self.session = Session(quiz)
 
-    async def on_enter(self, _network, _user):
+    async def on_enter(self, network, user):
         if not self.session:
             await self.new_session()
-
-    async def on_message(self, network, message):
-        if messages.is_join_request(message) and not self.session.is_user_present(message.user):
-            return await self._handle_join(network, message.user)
-        if not self.session.is_user_alive(message.user):
-            return
-        if messages.is_challenge_request(message) and not self.session.is_challenging():
-            return await self._handle_challenge(network, message.user)
-
-    async def _handle_join(self, network, user):
         await network.send(user, messages.question(self.session.quiz.question))
         await self._replay_events(network, user)
         await network.publish(messages.joined(user))
         self.session.add_user(user)
 
+    async def on_message(self, network, message):
+        if not self.session.is_user_alive(message.user):
+            return
+        if messages.is_challenge_request(message) and not self.session.is_challenging():
+            return await self._handle_challenge(network, message.user)
+
     async def _replay_events(self, network, user):
-        for other_user, alive in self.session.users.items():
-            if alive:
-                await network.send(user, messages.joined(other_user))
+        for other_user in self.session.users:
+            await network.send(user, messages.joined(other_user))
+            if not self.session.is_user_alive(other_user):
+                await network.send(user, messages.lost(other_user))
         if self.session.challenging:
             await network.send(user, messages.challenged(self.session.challenging))
 
@@ -100,7 +109,10 @@ class Conductor:
 
     async def _end_game(self, network, winner):
         await network.publish(messages.end(winner))
+        await asyncio.sleep(2)
         await self.new_session()
+        await network.publish(messages.question(self.session.quiz.question))
 
     async def on_exit(self, network, user):
+        self.session.remove_user(user)
         await self._handle_bad_answer(network, user)

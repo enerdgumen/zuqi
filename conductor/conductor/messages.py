@@ -1,16 +1,12 @@
 from box import Box
 
 
-def is_join_request(message):
-    return message.body.action == 'join'
-
-
 def is_challenge_request(message):
     return message.body.action == 'challenge'
 
 
 def question(text):
-    return Box(question=text)
+    return Box(event='ready', question=text)
 
 
 def joined(user):
@@ -22,7 +18,7 @@ def challenged(user):
 
 
 def reply(answers):
-    return Box(action='reply', answers=answers)
+    return Box(event='reply', answers=answers)
 
 
 def lost(user):

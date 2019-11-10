@@ -1,8 +1,13 @@
 import React from "react";
 import centered from "@storybook/addon-centered/react";
 import { action } from "@storybook/addon-actions";
-import { withKnobs, boolean, object } from "@storybook/addon-knobs";
-import { QuestionPanel, ChallengeButton, QuestionAnswers } from "./Question";
+import { withKnobs, boolean } from "@storybook/addon-knobs";
+import {
+  QuestionPanel,
+  ChallengeButton,
+  QuestionAnswers,
+  QuestionAnswer
+} from "./Question";
 
 export default {
   title: "Question",
@@ -14,33 +19,36 @@ export const WithChallenge = () => (
     <ChallengeButton
       onChallenge={action("Challenge")}
       challenging={boolean("Challenging", false)}
-      disabled={boolean("Disabled", false)}
     />
   </QuestionPanel>
 );
 
 export const WithAnswers = () => (
   <QuestionPanel question="What does the acronym CDN stand for in terms of networking?">
-    <QuestionAnswers
-      onSelect={action("Select")}
-      readOnly={boolean("Read only", false)}
-      answers={object("Answers", [
-        {
-          text: "Content Delivery Network"
-        },
-        {
-          text: "Content Distribution Network",
-          status: "loading"
-        },
-        {
-          text: "Computational Data Network",
-          status: "success"
-        },
-        {
-          text: "Compressed Data Network",
-          status: "failure"
-        }
-      ])}
-    />
+    <QuestionAnswers>
+      <QuestionAnswer
+        index={0}
+        text="Content Delivery Network"
+        onSelect={action("Select")}
+      />
+      <QuestionAnswer
+        index={1}
+        text="Content Distribution Network"
+        status="loading"
+        onSelect={action("Select")}
+      />
+      <QuestionAnswer
+        index={2}
+        text="Computational Data Network"
+        status="success"
+        onSelect={action("Select")}
+      />
+      <QuestionAnswer
+        index={3}
+        text="Compressed Data Network"
+        status="failure"
+        onSelect={action("Select")}
+      />
+    </QuestionAnswers>
   </QuestionPanel>
 );
