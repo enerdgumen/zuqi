@@ -1,5 +1,6 @@
 import aiohttp
 import html
+import random
 from box import Box
 from conductor.config import trivia_fetch_size, trivia_max_fetch_tentatives
 
@@ -30,14 +31,7 @@ class OpenTriviaQuizSource:
             body = Box(await res.json())
             if body.response_code == 0:
                 self.tentative = 0
-                return [
-                    Box(
-                        question=html.unescape(result.question),
-                        answers=[html.unescape(it) for it in [result.correct_answer] + result.incorrect_answers],
-                        answer=0
-                    )
-                    for result in body.results
-                ]
+                return [self._make_question(result) for result in body.results]
             if body.response_code == TOKEN_NOT_FOUND or body.response_code == TOKEN_EMPTY:
                 self.token = None
                 self.tentative += 1
@@ -51,3 +45,13 @@ class OpenTriviaQuizSource:
 
     async def close(self):
         await self.session.close()
+
+    @staticmethod
+    def _make_question(result):
+        answers = [result.correct_answer] + result.incorrect_answers
+        random.shuffle(answers)
+        return Box(
+            question=html.unescape(result.question),
+            answers=[html.unescape(it) for it in answers],
+            answer=answers.index(result.correct_answer)
+        )
