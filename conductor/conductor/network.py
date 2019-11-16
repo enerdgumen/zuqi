@@ -1,6 +1,5 @@
 from collections import namedtuple
 import logging
-from uuid import uuid4
 
 from aiohttp import WSMsgType, web
 from box import Box

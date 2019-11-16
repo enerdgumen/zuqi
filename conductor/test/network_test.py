@@ -1,4 +1,4 @@
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock
 
 from box import Box
 

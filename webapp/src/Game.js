@@ -58,7 +58,6 @@ function Session({ socket, username }) {
     socket.sendJson({ action: "challenge" });
   };
   const handleAnswer = index => {
-    console.log("answering")
     updateSession(it => {
       it.answer = index;
       it.answers[index].status = "loading";
@@ -110,7 +109,14 @@ function Session({ socket, username }) {
         console.log("unexpected message", data);
     }
   };
-  const { question, answers, answer, players, playersStatus, challenging } = session;
+  const {
+    question,
+    answers,
+    answer,
+    players,
+    playersStatus,
+    challenging
+  } = session;
   return (
     <Fragment>
       <SessionPlayers players={players} status={playersStatus} />
