@@ -6,7 +6,6 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import { makeStyles } from "@material-ui/core/styles";
 import { useSnackbar } from "notistack";
-import { EnterExitAnimation } from "./Animations";
 import { LoadingButton } from "./LoadingButton";
 
 const useStyles = makeStyles(theme => ({
@@ -76,11 +75,5 @@ export function Welcome({ onEnter }) {
   };
   return <WelcomePanel onEnter={handleEnter} entering={entering} />;
 }
-
-export const WelcomeAnimated = ({ ...props }) => (
-  <EnterExitAnimation>
-    <Welcome {...props} />
-  </EnterExitAnimation>
-);
 
 export default Welcome;
