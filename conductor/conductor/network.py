@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from aiohttp import WSMsgType, web
 from box import Box
+from cerberus import Validator
 
 Message = namedtuple('Message', ['user', 'body'])
 
@@ -13,6 +14,13 @@ async def noop(*_args):
 
 
 class Network:
+    request_schema = {
+        'uid': {
+            'type': 'string',
+            'empty': False
+        }
+    }
+
     def __init__(self, on_enter=noop, on_message=noop, on_exit=noop):
         self.registry = SocketRegistry()
         self.on_enter = on_enter
@@ -20,9 +28,9 @@ class Network:
         self.on_exit = on_exit
 
     async def __call__(self, request):
+        user = self._read_user(request)
         ws = web.WebSocketResponse()
         ws_ready = ws.can_prepare(request)
-        user = request.query['uid']
         if not ws_ready.ok:
             raise web.HTTPMethodNotAllowed()
         await ws.prepare(request)
@@ -34,6 +42,13 @@ class Network:
             self.registry.unregister(user)
             await self.on_exit(self, user)
         return ws
+
+    def _read_user(self, request):
+        query = Box(request.query)
+        validator = Validator(self.request_schema)
+        if not validator.validate(query):
+            raise web.HTTPBadRequest()
+        return query.uid
 
     async def _listen_messages(self, user, ws):
         while True:

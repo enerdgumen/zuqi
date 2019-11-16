@@ -6,6 +6,13 @@ from conductor.network import Network
 from conductor.server import application
 
 
+async def test_connect_require_uid(aiohttp_client):
+    network = Network()
+    client = await aiohttp_client(application(network, shutdown=AsyncMock()))
+    with pytest.raises(aiohttp.WSServerHandshakeError):
+        await client.ws_connect('/?uid=')
+
+
 async def test_enter_event(aiohttp_client):
     mock = AsyncMock()
     network = Network(on_enter=mock)

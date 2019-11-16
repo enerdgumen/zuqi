@@ -8,6 +8,7 @@ aiohttp = "*"
 environs = "*"
 pytest-aiohttp = "*"
 python-box = "*"
+cerberus = "*"
 
 [dev-packages]
 pytest = "*"
