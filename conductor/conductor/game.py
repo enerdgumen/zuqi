@@ -16,6 +16,8 @@ class Session:
 
     def remove_user(self, user):
         self.users.remove(user)
+        if self.challenging == user:
+            self.challenging = None
 
     def kill_user(self, user):
         self.dead_users.add(user)
@@ -115,4 +117,5 @@ class Conductor:
 
     async def on_exit(self, network, user):
         self.session.remove_user(user)
+        await network.publish(messages.lost(user))
         await network.publish(messages.left(user))
