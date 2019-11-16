@@ -6,7 +6,7 @@ def is_challenge_request(message):
 
 
 def question(text):
-    return Box(event='ready', question=text)
+    return Box(event='question', question=text)
 
 
 def joined(user):

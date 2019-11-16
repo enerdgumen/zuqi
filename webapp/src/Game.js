@@ -69,7 +69,7 @@ function Session({ socket, username }) {
     const data = JSON.parse(message.data);
     console.log("message:", data);
     switch (data.event) {
-      case "ready":
+      case "question":
         return updateSession(it => {
           it.question = data.question;
           it.answers = [];
