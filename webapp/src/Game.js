@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useState, Fragment } from "react";
 import { useImmer } from "use-immer";
 import { useTranslation } from "react-i18next";
@@ -17,12 +18,11 @@ import { useMonitor } from "./AsyncHooks";
 
 function Game() {
   const { t } = useTranslation();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const [socket, setSocket] = useState();
   const [username, setUsername] = useState();
   const [ready, setReady] = useState(false);
   const [entering, handleEnter] = useMonitor(async username => {
-    closeSnackbar();
     try {
       setSocket(await openSocket(username));
       setUsername(username);
@@ -58,6 +58,8 @@ function Game() {
 }
 
 function Session({ socket, username }) {
+  const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
   const [session, updateSession] = useImmer({
     question: null,
     answers: [],
@@ -95,6 +97,15 @@ function Session({ socket, username }) {
       case "joined":
         return updateSession(it => {
           it.players.push({ username: data.user });
+        });
+      case "left":
+        enqueueSnackbar(t("{{user}} has left the game", data));
+        return updateSession(it => {
+          const index = _.findIndex(
+            it.players,
+            it => it.username === data.user
+          );
+          delete it.players[index];
         });
       case "challenged":
         // TODO: if I'm challenged start countdown

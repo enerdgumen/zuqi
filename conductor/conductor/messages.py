@@ -13,6 +13,10 @@ def joined(user):
     return Box(event='joined', user=user)
 
 
+def left(user):
+    return Box(event='left', user=user)
+
+
 def challenged(user):
     return Box(event='challenged', user=user)
 

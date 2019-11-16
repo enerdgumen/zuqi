@@ -11,7 +11,8 @@
       "Players": "Giocatori",
       "Username": "Nome utente",
       "usernameNotAvailable": "Nome utente non disponibile!",
-      "Welcome to Zuqi": "Benvenuto in Zuqi"
+      "Welcome to Zuqi": "Benvenuto in Zuqi",
+      "{{user}} has left the game": "{{user}} ha lasciato il gioco"
     }
   }
 }

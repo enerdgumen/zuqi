@@ -115,4 +115,4 @@ class Conductor:
 
     async def on_exit(self, network, user):
         self.session.remove_user(user)
-        await self._handle_bad_answer(network, user)
+        await network.publish(messages.left(user))
