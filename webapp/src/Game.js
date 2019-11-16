@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { useImmer } from "use-immer";
 import { useTranslation } from "react-i18next";
 import { useSnackbar } from "notistack";
@@ -14,47 +14,64 @@ import {
 import { Players, Player } from "./Players";
 import { Center } from "./Layout";
 import { openSocket } from "./Socket";
-import { useMonitor } from "./AsyncHooks";
+import { createBrowserHistory } from "history";
+
+const history = createBrowserHistory();
 
 function Game() {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
-  const [socket, setSocket] = useState();
-  const [username, setUsername] = useState();
-  const [ready, setReady] = useState(false);
-  const [entering, handleEnter] = useMonitor(async username => {
-    try {
-      setSocket(await openSocket(username));
-      setUsername(username);
-    } catch (err) {
-      enqueueSnackbar(t(err.message), {
-        variant: "error"
-      });
-    }
-  });
-  if (socket) {
-    socket.onmessage = message => {
-      const data = JSON.parse(message.data);
-      switch (data.event) {
-        case "rejected":
-          return enqueueSnackbar(t("usernameNotAvailable"), {
-            variant: "warning"
-          });
-        case "ready":
-          return setReady(true);
-        default:
-          console.log("unexpected message", data);
-      }
-    };
+  const [connection, setConnection] = useState();
+  const handleLogin = connection => {
+    setConnection(connection);
+    saveUsername(connection.username);
+  };
+  const handleError = err => {
+    enqueueSnackbar(t(err.message), {
+      variant: "warning"
+    });
+  };
+  const saveUsername = username => {
+    history.push(`?uid=${username}`);
+  };
+  const getUsername = () => {
+    return new URLSearchParams(history.location.search).get("uid");
   }
-  if (!ready) {
+  if (!connection) {
     return (
-      <Center>
-        <WelcomePanel onEnter={handleEnter} entering={entering} />
-      </Center>
+      <Login
+        initialUsername={getUsername()}
+        onLogin={handleLogin}
+        onError={handleError}
+      />
     );
   }
-  return <Session socket={socket} username={username} />;
+  return <Session {...connection} />;
+}
+
+function Login({ initialUsername, onLogin, onError }) {
+  const [autoLogin, setAutoLogin] = useState(Boolean(initialUsername));
+  const [entering, setEntering] = useState(false);
+  const handleEnter = async username => {
+    try {
+      setEntering(true);
+      const socket = await openSocket(username);
+      onLogin({ socket, username });
+    } catch (err) {
+      setEntering(false);
+      setAutoLogin(false);
+      onError(err);
+    }
+  };
+  useEffect(() => {
+    if (autoLogin) handleEnter(initialUsername);
+  }, []);
+  return (
+    <Center>
+      {autoLogin && <CircularProgress />}
+      {!autoLogin && <WelcomePanel onEnter={handleEnter} entering={entering} />}
+    </Center>
+  );
 }
 
 function Session({ socket, username }) {

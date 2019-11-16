@@ -7,8 +7,17 @@ export async function openSocket(username) {
       console.log("send", data);
       setTimeout(() => socket.send(JSON.stringify(data)), 1000);
     };
-    socket.onopen = () => {
-      resolve(socket);
+    socket.onmessage = message => {
+      const data = JSON.parse(message.data);
+      console.log("message:", data);
+      switch (data.event) {
+        case "rejected":
+          return reject(Error('usernameNotAvailable'));
+        case "ready":
+          return resolve(socket);
+        default:
+          console.log("unexpected message", data);
+      }
     };
     socket.onerror = err => reject(err);
   });
