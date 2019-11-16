@@ -33,6 +33,10 @@ class Network:
         if not ws_ready.ok:
             raise web.HTTPMethodNotAllowed()
         await ws.prepare(request)
+        if self.registry.is_registered(user):
+            await ws.send_json(Box(event='rejected'))
+            return ws
+        await ws.send_json(Box(event='ready'))
         self.registry.register(ws, user)
         await self.on_enter(self, user)
         try:
@@ -95,6 +99,9 @@ class Network:
 class SocketRegistry:
     def __init__(self):
         self.sockets = {}
+
+    def is_registered(self, uid):
+        return uid in self.sockets
 
     def register(self, ws, uid):
         self.sockets[uid] = ws

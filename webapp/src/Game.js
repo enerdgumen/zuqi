@@ -20,6 +20,7 @@ function Game() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [socket, setSocket] = useState();
   const [username, setUsername] = useState();
+  const [ready, setReady] = useState(false);
   const [entering, handleEnter] = useMonitor(async username => {
     closeSnackbar();
     try {
@@ -31,7 +32,22 @@ function Game() {
       });
     }
   });
-  if (!socket) {
+  if (socket) {
+    socket.onmessage = message => {
+      const data = JSON.parse(message.data);
+      switch (data.event) {
+        case "rejected":
+          return enqueueSnackbar(t("usernameNotAvailable"), {
+            variant: "warning"
+          });
+        case "ready":
+          return setReady(true);
+        default:
+          console.log("unexpected message", data);
+      }
+    };
+  }
+  if (!ready) {
     return (
       <Center>
         <WelcomePanel onEnter={handleEnter} entering={entering} />

@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock
 
+import aiohttp
 from box import Box
+import pytest
 
 from conductor.network import Network
 from conductor.server import application
@@ -11,6 +13,23 @@ async def test_connect_require_uid(aiohttp_client):
     client = await aiohttp_client(application(network, shutdown=AsyncMock()))
     with pytest.raises(aiohttp.WSServerHandshakeError):
         await client.ws_connect('/?uid=')
+
+
+async def test_cannot_connect_clients_with_same_uid(aiohttp_client):
+    network = Network()
+    client = await aiohttp_client(application(network, shutdown=AsyncMock()))
+    await client.ws_connect('/?uid=id')
+    ws = await client.ws_connect('/?uid=id')
+    got = await ws.receive_json()
+    assert got == Box(event='rejected')
+
+
+async def test_send_ready_event_after_connection(aiohttp_client):
+    network = Network()
+    client = await aiohttp_client(application(network, shutdown=AsyncMock()))
+    ws = await client.ws_connect('/?uid=id')
+    got = await ws.receive_json()
+    assert got == Box(event='ready')
 
 
 async def test_enter_event(aiohttp_client):
@@ -29,6 +48,7 @@ async def test_send(aiohttp_client):
     network = Network(on_message=echo)
     client = await aiohttp_client(application(network, shutdown=AsyncMock()))
     ws = await client.ws_connect('/?uid=name')
+    await ws.receive_json()  # receive ready event
     await ws.send_json(Box(x=1))
     got = await ws.receive_json(timeout=3)
     assert got == Box(x=1)
@@ -42,6 +62,8 @@ async def test_publish(aiohttp_client):
     client = await aiohttp_client(application(network, shutdown=AsyncMock()))
     ws1 = await client.ws_connect('/?uid=name1')
     ws2 = await client.ws_connect('/?uid=name2')
+    await ws1.receive_json()  # receive ready event
+    await ws2.receive_json()  # receive ready event
     await ws1.send_json(Box(x=1))
     got = await ws1.receive_json(timeout=1)
     assert got == Box(x=1)
