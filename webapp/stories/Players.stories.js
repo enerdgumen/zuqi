@@ -1,5 +1,5 @@
 import React from "react";
-import { Players, Player } from "./Players";
+import { Players, Player } from "../src/Players";
 
 export default {
   title: "Players"

@@ -7,7 +7,7 @@ import {
   ChallengeButton,
   QuestionAnswers,
   QuestionAnswer
-} from "./Question";
+} from "../src/Question";
 
 export default {
   title: "Question",
