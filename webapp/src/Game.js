@@ -4,7 +4,7 @@ import { useImmer } from "use-immer";
 import { useTranslation } from "react-i18next";
 import { useSnackbar } from "notistack";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { WelcomePanel } from "./Welcome";
+import { Welcome } from "./Welcome";
 import {
   QuestionPanel,
   ChallengeButton,
@@ -69,7 +69,7 @@ function Login({ initialUsername, onLogin, onError }) {
   return (
     <Center>
       {autoLogin && <CircularProgress />}
-      {!autoLogin && <WelcomePanel onEnter={handleEnter} entering={entering} />}
+      {!autoLogin && <Welcome onEnter={handleEnter} entering={entering} />}
     </Center>
   );
 }

@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export function WelcomePanel({ onEnter, entering }) {
+export function Welcome({ onEnter, entering }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState();
   const catchReturn = ev => {
@@ -54,26 +54,6 @@ export function WelcomePanel({ onEnter, entering }) {
       </Box>
     </Paper>
   );
-}
-
-export function Welcome({ onEnter }) {
-  const { t } = useTranslation();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [entering, setEntering] = useState(false);
-  const handleEnter = async username => {
-    setEntering(true);
-    closeSnackbar();
-    try {
-      await onEnter(username);
-    } catch (err) {
-      enqueueSnackbar(t(err.message), {
-        variant: "info"
-      });
-    } finally {
-      setEntering(false);
-    }
-  };
-  return <WelcomePanel onEnter={handleEnter} entering={entering} />;
 }
 
 export default Welcome;
