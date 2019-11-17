@@ -1,0 +1,4 @@
+conductor/__pycache__
+conductor/conductor/__pycache__
+webapp/build
+webapp/node_modules
