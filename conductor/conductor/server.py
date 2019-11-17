@@ -1,16 +1,25 @@
 import logging
+import os.path
 from aiohttp import web
 
 from conductor.game import Conductor
-from conductor.config import log_level, port
+from conductor.config import log_level, port, static_files_path
 from conductor.network import Network
 from conductor.quiz import OpenTriviaQuizSource
+
+
+async def index(_request):
+    return web.FileResponse(os.path.join(static_files_path, 'index.html'))
 
 
 def application(network, shutdown):
     app = web.Application()
     app.on_shutdown.append(shutdown)
-    app.add_routes([web.get('/', network)])
+    app.add_routes([
+        web.get('/', index),
+        web.get('/play', network),
+        web.static('/', static_files_path)
+    ])
     return app
 
 
