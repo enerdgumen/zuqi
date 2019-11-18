@@ -5,7 +5,6 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import { makeStyles } from "@material-ui/core/styles";
-import { useSnackbar } from "notistack";
 import { LoadingButton } from "./LoadingButton";
 
 const useStyles = makeStyles(theme => ({
