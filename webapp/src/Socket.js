@@ -1,7 +1,10 @@
 export async function openSocket(username) {
   return new Promise((resolve, reject) => {
-    const hostname = window.location.hostname;
-    const url = `ws://${hostname}:8000/play?uid=${encodeURIComponent(username)}`;
+    const { protocol, hostname, port } = window.location;
+    const proto = protocol === "https:" ? "wss:" : "ws:";
+    const uid = encodeURIComponent(username);
+    const socketPort = process.env.REACT_APP_SOCKET_PORT || port;
+    const url = `${proto}//${hostname}:${socketPort}/play?uid=${uid}`;
     const socket = new WebSocket(url);
     socket.sendJson = data => {
       console.log("send", data);

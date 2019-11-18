@@ -6,6 +6,12 @@ In the project directory, you can run:
 
 ### `npm start`
 
+During development, since the built in proxy is [bugged](https://github.com/facebook/create-react-app/issues/5280), you should configure the port of the conductor service.
+Start the server with the environment variable `REACT_APP_SOCKET_PORT` properly configured, i.e.:
+```
+REACT_APP_SOCKET_PORT=8000 npm start
+```
+
 Runs the app in the development mode.<br />
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
