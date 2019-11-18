@@ -27,7 +27,7 @@ function Game() {
     saveUsername(connection.username);
   };
   const handleError = err => {
-    enqueueSnackbar(t(err.message), {
+    enqueueSnackbar(t(err.message || "Something goes wrong..."), {
       variant: "warning"
     });
   };
@@ -36,7 +36,7 @@ function Game() {
   };
   const getUsername = () => {
     return new URLSearchParams(history.location.search).get("uid");
-  }
+  };
   if (!connection) {
     return (
       <Login
