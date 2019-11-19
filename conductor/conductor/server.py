@@ -17,9 +17,10 @@ def application(network, shutdown):
     app.on_shutdown.append(shutdown)
     app.add_routes([
         web.get('/', index),
-        web.get('/play', network),
-        web.static('/', static_files_path)
+        web.get('/play', network)
     ])
+    if static_files_path:
+        app.add_routes([web.static('/', static_files_path)])
     return app
 
 
