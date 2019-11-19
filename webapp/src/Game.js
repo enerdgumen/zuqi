@@ -138,7 +138,7 @@ function Session({ socket, username }) {
         return updateSession(it => {
           it.challenging = false;
           it.playersStatus[data.user] = "loser";
-          if (data.user === username) {
+          if (data.user === username && it.answer) {
             it.answers[it.answer].status = "failure";
           }
         });
