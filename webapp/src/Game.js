@@ -21,7 +21,7 @@ const history = createBrowserHistory();
 function Game() {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
-  const [connection, setConnection] = useState();
+  const [connection, setConnection] = useState(null);
   const handleLogin = connection => {
     setConnection(connection);
     saveUsername(connection.username);
@@ -31,6 +31,7 @@ function Game() {
       variant: "warning"
     });
   };
+  const handleExit = () => setConnection(null);
   const saveUsername = username => {
     history.push(`?uid=${username}`);
   };
@@ -46,7 +47,7 @@ function Game() {
       />
     );
   }
-  return <Session {...connection} />;
+  return <Session {...connection} onExit={handleExit} />;
 }
 
 function Login({ initialUsername, onLogin, onError }) {
@@ -74,7 +75,7 @@ function Login({ initialUsername, onLogin, onError }) {
   );
 }
 
-function Session({ socket, username }) {
+function Session({ socket, username, onExit }) {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const [session, updateSession] = useImmer({
@@ -153,6 +154,7 @@ function Session({ socket, username }) {
         console.log("unexpected message", data);
     }
   };
+  socket.onclose = onExit;
   const {
     question,
     answers,
