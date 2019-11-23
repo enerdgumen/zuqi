@@ -12,6 +12,7 @@
     "notistack": "^0.9.5",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
+    "react-error-boundary": "^1.2.5",
     "react-i18next": "^11.0.0",
     "react-scripts": "3.2.0",
     "use-immer": "^0.3.5"
