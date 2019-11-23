@@ -10,7 +10,9 @@ function Center({ children }) {
       justify="center"
       style={{ minHeight: "100vh" }}
     >
-      {children}
+      <Grid item xs={12} sm={10} md={8} lg={5} xl={4}>
+        {children}
+      </Grid>
     </Grid>
   );
 }

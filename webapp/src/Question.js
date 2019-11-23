@@ -16,7 +16,6 @@ import clsx from "clsx";
 const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(3),
-    maxWidth: "50vw",
     zIndex: 1
   },
   question: {
