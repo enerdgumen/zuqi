@@ -113,6 +113,7 @@ function Session({ socket, username, onExit }) {
           it.answer = null;
           it.playersStatus = {};
           it.challenging = false;
+          it.acceptAnswer = false;
         });
       case "joined":
         return updateSession(it => {
@@ -136,6 +137,7 @@ function Session({ socket, username, onExit }) {
       case "reply":
         return updateSession(it => {
           it.answers = data.answers.map(text => ({ text }));
+          it.acceptAnswer = true;
           it.replyTimeout = data.timeout;
         });
       case "lost":
@@ -145,8 +147,11 @@ function Session({ socket, username, onExit }) {
         return updateSession(it => {
           it.challenging = false;
           it.playersStatus[data.user] = "loser";
-          if (data.user === username && it.answer) {
-            it.answers[it.answer].status = "failure";
+          if (data.user === username) {
+            if (it.answer) {
+              it.answers[it.answer].status = "failure";
+            }
+            it.acceptAnswer = false;
           }
         });
       case "end":
@@ -174,6 +179,7 @@ function Session({ socket, username, onExit }) {
     question,
     answers,
     answer,
+    acceptAnswer,
     replyTimeout,
     players,
     playersStatus,
@@ -185,6 +191,7 @@ function Session({ socket, username, onExit }) {
       <Center>
         {question && (
           <SessionQuestion
+            active={acceptAnswer}
             question={question}
             answers={answers}
             answer={answer}
@@ -215,6 +222,7 @@ function SessionPlayers({ players, status }) {
 }
 
 function SessionQuestion({
+  active,
   question,
   answers,
   answer,
@@ -240,7 +248,7 @@ function SessionQuestion({
                 index={index}
                 text={text}
                 status={status}
-                onSelect={answer !== null ? undefined : onAnswer}
+                onSelect={active && answer === null ? onAnswer : undefined}
               />
             ))}
           </QuestionAnswers>
