@@ -118,6 +118,7 @@ function Session({ socket, username, onExit }) {
         return updateSession(it => {
           const index = _.findIndex(it.players, it => it.username === data.user);
           if (index >= 0) it.players.splice(index, 1);
+          delete it.playersStatus[data.user]
         });
       case "challenged":
         return updateSession(it => {
@@ -159,7 +160,7 @@ function Session({ socket, username, onExit }) {
             it.playersStatus[data.winner] = "winner";
           }
           if (it.answers.length > 0) {
-          it.answers[data.answer].status = "success";
+            it.answers[data.answer].status = "success";
           }
         });
       default:
