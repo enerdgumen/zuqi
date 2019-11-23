@@ -111,7 +111,7 @@ class Conductor:
 
     async def _end_game(self, network, winner):
         await network.publish(messages.end(winner))
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
         await self.new_session()
         await network.publish(messages.question(self.session.quiz.question))
 
