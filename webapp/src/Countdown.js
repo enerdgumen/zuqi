@@ -30,12 +30,14 @@ export function Countdown({ total, current }) {
 }
 
 export function useCountdown(seconds) {
-  const [countdown, setCountdown] = useState(seconds);
+  const frequency = 5;
+  const total = seconds * frequency;
+  const [countdown, setCountdown] = useState(total);
   const [timer, setTimer] = useState();
   const start = () => {
     const interval = setInterval(() => {
       setCountdown(it => it - 1);
-    }, 1000);
+    }, 1000 / frequency);
     setTimer(interval);
   };
   const stop = () => {
@@ -48,5 +50,5 @@ export function useCountdown(seconds) {
   useEffect(() => {
     if (countdown === 0) stop();
   }, [countdown]);
-  return countdown;
+  return [total, countdown];
 }

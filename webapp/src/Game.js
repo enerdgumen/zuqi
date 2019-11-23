@@ -255,8 +255,8 @@ function SessionQuestion({
 }
 
 function SessionCountdown({ seconds }) {
-  const countdown = useCountdown(seconds);
-  return <Countdown total={seconds} current={countdown} />;
+  const [total, current] = useCountdown(seconds);
+  return <Countdown total={total} current={current} />;
 }
 
 export default Game;
