@@ -80,13 +80,7 @@ function Session({ socket, username, onExit }) {
   const { t } = useTranslation();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [session, updateSession] = useImmer({
-    question: null,
-    answers: [],
-    answersStatus: [],
-    answer: null,
-    players: [],
-    playersStatus: {},
-    challenging: false
+    players: []
   });
   const handleChallenge = () => {
     updateSession(it => {
