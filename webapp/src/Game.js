@@ -155,10 +155,10 @@ function Session({ socket, username, onExit }) {
           });
         }
         return updateSession(it => {
+          if (data.winner) {
           it.playersStatus[data.winner] = "winner";
-          if (data.winner === username) {
-            it.answers[it.answer].status = "success";
           }
+          it.answers[data.answer].status = "success";
         });
       default:
         console.log("unexpected message", data);

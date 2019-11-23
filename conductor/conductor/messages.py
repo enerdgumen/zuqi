@@ -29,5 +29,5 @@ def lost(user, reason):
     return Box(event='lost', user=user, reason=reason)
 
 
-def end(winner):
-    return Box(event='end', winner=winner)
+def end(winner, answer):
+    return Box(event='end', winner=winner, answer=answer)
