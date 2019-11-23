@@ -107,7 +107,7 @@ function Session({ socket, username, onExit }) {
           it.answer = null;
           it.playersStatus = {};
           it.challenging = false;
-          it.acceptAnswer = false;
+          it.acceptAnswer = true;
         });
       case "joined":
         return updateSession(it => {
@@ -118,7 +118,6 @@ function Session({ socket, username, onExit }) {
         return updateSession(it => {
           const index = _.findIndex(it.players, it => it.username === data.user);
           if (index >= 0) it.players.splice(index, 1);
-          delete it.playersStatus[data.user]
         });
       case "challenged":
         return updateSession(it => {
@@ -128,13 +127,14 @@ function Session({ socket, username, onExit }) {
       case "reply":
         return updateSession(it => {
           it.answers = data.answers.map(text => ({ text }));
-          it.acceptAnswer = true;
           it.replyTimeout = data.timeout;
         });
       case "lost":
-        enqueueSnackbar(t(`{{user}} is out due to ${data.reason}`, data), {
-          variant: "error"
-        });
+        if (data.reason) {
+          enqueueSnackbar(t(`{{user}} is out due to ${data.reason}`, data), {
+            variant: "error"
+          });
+        }
         return updateSession(it => {
           it.challenging = false;
           it.playersStatus[data.user] = "loser";
@@ -224,6 +224,7 @@ function SessionQuestion({
   onChallenge,
   onAnswer
 }) {
+  const answering = answers.length > 0 && active && answer === null
   return (
     <Fragment>
       <QuestionPanel question={question}>
@@ -231,6 +232,7 @@ function SessionQuestion({
           <ChallengeButton
             onChallenge={onChallenge}
             challenging={challenging}
+            enabled={active}
           />
         )}
         {answers.length > 0 && (
@@ -241,15 +243,13 @@ function SessionQuestion({
                 index={index}
                 text={text}
                 status={status}
-                onSelect={active && answer === null ? onAnswer : undefined}
+                onSelect={answering ? onAnswer : undefined}
               />
             ))}
           </QuestionAnswers>
         )}
       </QuestionPanel>
-      {active && answer === null && (
-        <SessionCountdown seconds={timeoutSeconds} />
-      )}
+      {answering && <SessionCountdown seconds={timeoutSeconds} />}
     </Fragment>
   );
 }

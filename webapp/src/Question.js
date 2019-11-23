@@ -53,13 +53,13 @@ const successStatus = "success";
 const failureStatus = "failure";
 const loadingStatus = "loading";
 
-export function ChallengeButton({ onChallenge, challenging }) {
+export function ChallengeButton({ onChallenge, challenging, enabled }) {
   const { t } = useTranslation();
   return (
     <LoadingButton
       variant="contained"
       color="primary"
-      disabled={challenging}
+      disabled={!enabled || challenging}
       loading={challenging}
       onClick={onChallenge}
     >
