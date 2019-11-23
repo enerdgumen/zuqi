@@ -1,3 +1,12 @@
+# Zuqi
+
+## Project structure
+
+* *conductor*: the backend server;
+* *webapp*: the frontend web application.
+
+Consult the specific README of each module for more details.
+
 ## Build and run with Docker
 
 ```
