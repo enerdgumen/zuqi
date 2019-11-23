@@ -129,7 +129,6 @@ function Session({ socket, username, onExit }) {
           delete it.players[index];
         });
       case "challenged":
-        // TODO: if I'm challenged start countdown
         return updateSession(it => {
           it.playersStatus[data.user] = "challenging";
           it.challenging = true;
