@@ -25,8 +25,8 @@ def reply(answers, timeout):
     return Box(event='reply', answers=answers, timeout=timeout)
 
 
-def lost(user):
-    return Box(event='lost', user=user)
+def lost(user, reason):
+    return Box(event='lost', user=user, reason=reason)
 
 
 def end(winner):

@@ -78,7 +78,7 @@ function Login({ initialUsername, onLogin, onError }) {
 
 function Session({ socket, username, onExit }) {
   const { t } = useTranslation();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [session, updateSession] = useImmer({
     question: null,
     answers: [],
@@ -106,6 +106,7 @@ function Session({ socket, username, onExit }) {
     console.log("message:", data);
     switch (data.event) {
       case "question":
+        closeSnackbar();
         return updateSession(it => {
           it.question = data.question;
           it.answers = [];
@@ -138,6 +139,9 @@ function Session({ socket, username, onExit }) {
           it.replyTimeout = data.timeout;
         });
       case "lost":
+        enqueueSnackbar(t(`{{user}} is out due to ${data.reason}`, data), {
+          variant: "error"
+        });
         return updateSession(it => {
           it.challenging = false;
           it.playersStatus[data.user] = "loser";
@@ -146,6 +150,15 @@ function Session({ socket, username, onExit }) {
           }
         });
       case "end":
+        if (data.winner) {
+          enqueueSnackbar(t(`{{winner}} won!`, data), {
+            variant: "success"
+          });
+        } else {
+          enqueueSnackbar(t(`Nobody won!`, data), {
+            variant: "warning"
+          });
+        }
         return updateSession(it => {
           it.playersStatus[data.winner] = "winner";
           if (data.winner === username) {
@@ -212,24 +225,27 @@ function SessionQuestion({
 }) {
   return (
     <Fragment>
-    <QuestionPanel question={question}>
-      {answers.length === 0 && (
-        <ChallengeButton onChallenge={onChallenge} challenging={challenging} />
-      )}
-      {answers.length > 0 && (
-        <QuestionAnswers>
-          {answers.map(({ text, status }, index) => (
-            <QuestionAnswer
-              key={index}
-              index={index}
-              text={text}
-              status={status}
-              onSelect={answer !== null ? undefined : onAnswer}
-            />
-          ))}
-        </QuestionAnswers>
-      )}
-    </QuestionPanel>
+      <QuestionPanel question={question}>
+        {answers.length === 0 && (
+          <ChallengeButton
+            onChallenge={onChallenge}
+            challenging={challenging}
+          />
+        )}
+        {answers.length > 0 && (
+          <QuestionAnswers>
+            {answers.map(({ text, status }, index) => (
+              <QuestionAnswer
+                key={index}
+                index={index}
+                text={text}
+                status={status}
+                onSelect={answer !== null ? undefined : onAnswer}
+              />
+            ))}
+          </QuestionAnswers>
+        )}
+      </QuestionPanel>
       {answers.length > 0 && !answer && (
         <SessionCountdown seconds={timeoutSeconds} />
       )}

@@ -1,19 +1,25 @@
 {
   "en": {
     "translation": {
-      "usernameNotAvailable": "Username not available!"
+      "usernameNotAvailable": "Username not available!",
+      "{{user}} is out due to incorrect": "{{user}} was wrong!",
+      "{{user}} is out due to timeout": "{{user}} didn't respond in time!"
     }
   },
   "it": {
     "translation": {
       "Challenge": "Sfida",
       "Enter": "Entra",
+      "Nobody won!": "Non ha vinto nessuno!",
       "Players": "Giocatori",
       "Something goes wrong...": "Qualcosa è andato storto...",
       "Username": "Nome utente",
       "usernameNotAvailable": "Nome utente non disponibile!",
       "Welcome to Zuqi": "Benvenuto in Zuqi",
-      "{{user}} has left the game": "{{user}} ha lasciato il gioco"
+      "{{user}} has left the game": "{{user}} ha lasciato il gioco",
+      "{{user}} is out due to incorrect": "{{user}} ha sbagliato!",
+      "{{user}} is out due to timeout": "{{user}} non ha risposto in tempo!",
+      "{{winner}} won!": "{{winner}} ha vinto!"
     }
   }
 }
