@@ -12,6 +12,7 @@ import {
   QuestionAnswer
 } from "./Question";
 import { Players, Player } from "./Players";
+import { Countdown, useCountdown } from "./Countdown";
 import { Center } from "./Layout";
 import { openSocket } from "./Socket";
 import { createBrowserHistory } from "history";
@@ -134,6 +135,7 @@ function Session({ socket, username, onExit }) {
       case "reply":
         return updateSession(it => {
           it.answers = data.answers.map(text => ({ text }));
+          it.replyTimeout = data.timeout;
         });
       case "lost":
         return updateSession(it => {
@@ -159,6 +161,7 @@ function Session({ socket, username, onExit }) {
     question,
     answers,
     answer,
+    replyTimeout,
     players,
     playersStatus,
     challenging
@@ -173,6 +176,7 @@ function Session({ socket, username, onExit }) {
             answers={answers}
             answer={answer}
             challenging={challenging}
+            timeoutSeconds={replyTimeout}
             onChallenge={handleChallenge}
             onAnswer={handleAnswer}
           />
@@ -202,10 +206,12 @@ function SessionQuestion({
   answers,
   answer,
   challenging,
+  timeoutSeconds,
   onChallenge,
   onAnswer
 }) {
   return (
+    <Fragment>
     <QuestionPanel question={question}>
       {answers.length === 0 && (
         <ChallengeButton onChallenge={onChallenge} challenging={challenging} />
@@ -224,7 +230,16 @@ function SessionQuestion({
         </QuestionAnswers>
       )}
     </QuestionPanel>
+      {answers.length > 0 && !answer && (
+        <SessionCountdown seconds={timeoutSeconds} />
+      )}
+    </Fragment>
   );
+}
+
+function SessionCountdown({ seconds }) {
+  const countdown = useCountdown(seconds);
+  return <Countdown total={seconds} current={countdown} />;
 }
 
 export default Game;

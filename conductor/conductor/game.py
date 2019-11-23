@@ -83,7 +83,7 @@ class Conductor:
     async def _handle_challenge(self, network, user):
         try:
             self.session.begin_challenge(user)
-            await network.send(user, messages.reply(self.session.quiz.answers))
+            await network.send(user, messages.reply(self.session.quiz.answers, challenge_timeout_seconds))
             await network.publish(messages.challenged(user))
             try:
                 answer = await network.receive(user, timeout=challenge_timeout_seconds)

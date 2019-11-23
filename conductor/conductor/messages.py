@@ -21,8 +21,8 @@ def challenged(user):
     return Box(event='challenged', user=user)
 
 
-def reply(answers):
-    return Box(event='reply', answers=answers)
+def reply(answers, timeout):
+    return Box(event='reply', answers=answers, timeout=timeout)
 
 
 def lost(user):
