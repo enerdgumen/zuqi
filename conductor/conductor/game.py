@@ -95,6 +95,8 @@ class Conductor:
                 await self._handle_answer(network, answer)
             except asyncio.TimeoutError:
                 await self._handle_bad_answer(network, user, 'timeout')
+            except:
+                await self._handle_bad_answer(network, user, reason=None)
         finally:
             self.session.end_challenge()
 
@@ -122,8 +124,4 @@ class Conductor:
 
     async def on_exit(self, network, user):
         self.session.remove_user(user)
-        if self.session.challenging == user:
-            self.session.kill_user(user)
-            self.session.end_challenge()
-            await network.publish(messages.lost(user, reason='exit'))
         await network.publish(messages.left(user))

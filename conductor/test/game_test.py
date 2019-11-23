@@ -109,6 +109,8 @@ async def test_unjoin_user_after_answer_timeout():
 
 
 async def test_user_in_challenge_lose_on_exit():
+    def fail_receive():
+        raise RuntimeError()
     net = AsyncMock()
     conductor = Conductor(
         quiz_source=MockQuizSource(),
@@ -119,8 +121,9 @@ async def test_user_in_challenge_lose_on_exit():
     luigi = UserEmulator(conductor=conductor, net=net, uid='luigi')
     await mario.enter()
     await luigi.enter()
-    await mario.challenge(answer=None, meanwhile=lambda: mario.exit())
-    net.publish.assert_any_call(messages.lost('mario', reason='exit'))
+    await mario.challenge(answer=None, meanwhile=fail_receive)
+    await mario.exit()
+    net.publish.assert_any_call(messages.lost('mario', reason=None))
 
 
 async def test_user_cannot_retry_challenge_after_fail():
