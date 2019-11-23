@@ -181,7 +181,7 @@ function Session({ socket, username, onExit }) {
   return (
     <Fragment>
       <SessionPlayers players={players} status={playersStatus} />
-      <Center>
+      <Center responsive={true}>
         {question && (
           <SessionQuestion
             active={acceptAnswer}
