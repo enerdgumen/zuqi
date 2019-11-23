@@ -158,7 +158,9 @@ function Session({ socket, username, onExit }) {
           if (data.winner) {
             it.playersStatus[data.winner] = "winner";
           }
+          if (it.answers.length > 0) {
           it.answers[data.answer].status = "success";
+          }
         });
       default:
         console.log("unexpected message", data);
