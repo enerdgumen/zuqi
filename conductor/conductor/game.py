@@ -94,7 +94,7 @@ class Conductor:
                 answer = await network.receive(user, timeout=self.challenge_timeout_seconds)
                 await self._handle_answer(network, answer)
             except asyncio.TimeoutError:
-                await self._handle_bad_answer(network, user, 'timeout')
+                await self._handle_bad_answer(network, user, reason='timeout')
             except:
                 await self._handle_bad_answer(network, user, reason=None)
         finally:
@@ -105,7 +105,7 @@ class Conductor:
         if ok:
             await self._handle_good_answer(network, message.user)
         else:
-            await self._handle_bad_answer(network, message.user, 'incorrect')
+            await self._handle_bad_answer(network, message.user, reason='incorrect')
 
     async def _handle_good_answer(self, network, user):
         await self._end_game(network, winner=user)
