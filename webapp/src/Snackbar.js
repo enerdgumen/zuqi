@@ -16,7 +16,7 @@ const Provider = ({ children }) => {
     <SnackbarProvider
       anchorOrigin={{
         vertical: "bottom",
-        horizontal: "center"
+        horizontal: "right"
       }}
       classes={{
         variantSuccess: classes.success,
