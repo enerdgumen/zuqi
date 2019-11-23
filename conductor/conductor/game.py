@@ -1,7 +1,6 @@
 import asyncio
 
 from conductor import messages
-from conductor.config import challenge_timeout_seconds
 
 
 class Session:
@@ -45,8 +44,14 @@ class Session:
 
 
 class Conductor:
-    def __init__(self, quiz_source):
+    def __init__(self,
+                 quiz_source,
+                 challenge_timeout_seconds,
+                 seconds_before_new_session,
+                 ):
         self.quiz_source = quiz_source
+        self.challenge_timeout_seconds = challenge_timeout_seconds
+        self.seconds_before_new_session = seconds_before_new_session
         self.session = None
 
     async def new_session(self):
@@ -83,10 +88,10 @@ class Conductor:
     async def _handle_challenge(self, network, user):
         try:
             self.session.begin_challenge(user)
-            await network.send(user, messages.reply(self.session.quiz.answers, challenge_timeout_seconds))
+            await network.send(user, messages.reply(self.session.quiz.answers, self.challenge_timeout_seconds))
             await network.publish(messages.challenged(user))
             try:
-                answer = await network.receive(user, timeout=challenge_timeout_seconds)
+                answer = await network.receive(user, timeout=self.challenge_timeout_seconds)
                 await self._handle_answer(network, answer)
             except asyncio.TimeoutError:
                 await self._handle_bad_answer(network, user, 'timeout')
@@ -111,7 +116,7 @@ class Conductor:
 
     async def _end_game(self, network, winner):
         await network.publish(messages.end(winner, answer=self.session.quiz.answer))
-        await asyncio.sleep(3)
+        await asyncio.sleep(self.seconds_before_new_session)
         await self.new_session()
         await network.publish(messages.question(self.session.quiz.question))
 

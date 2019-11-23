@@ -5,8 +5,6 @@ from aiohttp import WSMsgType, web
 from box import Box
 from cerberus import Validator
 
-from conductor.config import max_sockets
-
 Message = namedtuple('Message', ['user', 'body'])
 
 
@@ -22,8 +20,8 @@ class Network:
         }
     }
 
-    def __init__(self, on_enter=noop, on_message=noop, on_exit=noop):
-        self.registry = SocketRegistry()
+    def __init__(self, registry, on_enter=noop, on_message=noop, on_exit=noop):
+        self.registry = registry
         self.on_enter = on_enter
         self.on_message = on_message
         self.on_exit = on_exit
@@ -96,20 +94,3 @@ class Network:
         for user, ws in self.registry.sockets.items():
             await ws.close()
             self.registry.unregister(user)
-
-
-class SocketRegistry:
-    def __init__(self):
-        self.sockets = {}
-
-    def register(self, ws, uid):
-        if len(self.sockets) >= max_sockets:
-            return 'maxSocketsReached'
-        if uid in self.sockets:
-            return 'usernameNotAvailable'
-        self.sockets[uid] = ws
-        logging.debug('%s: registered socket', uid)
-
-    def unregister(self, uid):
-        del self.sockets[uid]
-        logging.debug('%s: unregistered socket', uid)
