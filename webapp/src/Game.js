@@ -116,11 +116,8 @@ function Session({ socket, username, onExit }) {
       case "left":
         enqueueSnackbar(t("{{user}} has left the game", data));
         return updateSession(it => {
-          const index = _.findIndex(
-            it.players,
-            it => it.username === data.user
-          );
-          delete it.players[index];
+          const index = _.findIndex(it.players, it => it.username === data.user);
+          if (index >= 0) it.players.splice(index, 1);
         });
       case "challenged":
         return updateSession(it => {
