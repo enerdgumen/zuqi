@@ -30,9 +30,8 @@ const useStyles = makeStyles(theme => ({
     minWidth: '12em',
     maxWidth: '20em',
     position: "fixed",
-    top: "50%",
-    left: '1em',
-    transform: "translate(0, -50%)"
+    top: "1em",
+    left: '1em'
   },
   title: {
     marginTop: theme.spacing(1),
