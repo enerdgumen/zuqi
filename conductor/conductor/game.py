@@ -77,6 +77,8 @@ class Conductor:
             await network.send(user, messages.joined(other_user))
             if not self.session.is_user_alive(other_user):
                 await network.send(user, messages.lost(other_user))
+        if not self.session.is_user_alive(user):
+            await network.send(user, messages.lost(user))
         if self.session.challenging:
             await network.send(user, messages.challenged(self.session.challenging))
 
