@@ -117,5 +117,6 @@ class Conductor:
 
     async def on_exit(self, network, user):
         self.session.remove_user(user)
-        await network.publish(messages.lost(user, reason='exit'))
+        if self.session.challenging == user:
+            await network.publish(messages.lost(user, reason='exit'))
         await network.publish(messages.left(user))
