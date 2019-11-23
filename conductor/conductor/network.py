@@ -5,6 +5,8 @@ from aiohttp import WSMsgType, web
 from box import Box
 from cerberus import Validator
 
+from conductor.config import max_sockets
+
 Message = namedtuple('Message', ['user', 'body'])
 
 
@@ -101,6 +103,8 @@ class SocketRegistry:
         self.sockets = {}
 
     def register(self, ws, uid):
+        if len(self.sockets) >= max_sockets:
+            return 'maxSocketsReached'
         if uid in self.sockets:
             return 'usernameNotAvailable'
         self.sockets[uid] = ws

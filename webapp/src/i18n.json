@@ -1,6 +1,7 @@
 {
   "en": {
     "translation": {
+      "maxSocketsReached": "The maximum number of users has been reached, please try again later.",
       "usernameNotAvailable": "Username not available!",
       "{{user}} is out due to incorrect": "{{user}} was wrong!",
       "{{user}} is out due to timeout": "{{user}} didn't respond in time!"
@@ -10,6 +11,7 @@
     "translation": {
       "Challenge": "Sfida",
       "Enter": "Entra",
+      "maxSocketsReached": "È stato raggiunto il numero massimo di utenti, riprova più tardi.",
       "Nobody won!": "Non ha vinto nessuno!",
       "Players": "Giocatori",
       "Something goes wrong...": "Qualcosa è andato storto...",
