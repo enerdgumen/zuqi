@@ -18,6 +18,7 @@ export const WithChallenge = () => (
   <QuestionPanel question="What does the acronym CDN stand for in terms of networking?">
     <ChallengeButton
       onChallenge={action("Challenge")}
+      enabled={boolean("Enabled", true)}
       challenging={boolean("Challenging", false)}
     />
   </QuestionPanel>
