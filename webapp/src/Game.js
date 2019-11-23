@@ -138,7 +138,7 @@ function Session({ socket, username, onExit }) {
           it.challenging = false;
           it.playersStatus[data.user] = "loser";
           if (data.user === username) {
-            if (it.answer) {
+            if (it.answer !== null) {
               it.answers[it.answer].status = "failure";
             }
             it.acceptAnswer = false;
@@ -156,7 +156,7 @@ function Session({ socket, username, onExit }) {
         }
         return updateSession(it => {
           if (data.winner) {
-          it.playersStatus[data.winner] = "winner";
+            it.playersStatus[data.winner] = "winner";
           }
           it.answers[data.answer].status = "success";
         });
@@ -244,7 +244,7 @@ function SessionQuestion({
           </QuestionAnswers>
         )}
       </QuestionPanel>
-      {answers.length > 0 && !answer && (
+      {active && answer === null && (
         <SessionCountdown seconds={timeoutSeconds} />
       )}
     </Fragment>
