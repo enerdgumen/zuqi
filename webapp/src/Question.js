@@ -69,12 +69,11 @@ export function ChallengeButton({ onChallenge, challenging }) {
 }
 
 export function QuestionPanel({ question, children }) {
-  const { t } = useTranslation();
   const classes = useStyles();
   return (
     <Paper className={classes.root}>
       <Typography className={classes.question} variant="h5">
-        {t(question)}
+        {question}
       </Typography>
       {children}
     </Paper>
