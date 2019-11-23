@@ -15,7 +15,7 @@ export async function openSocket(username) {
       console.log("message:", data);
       switch (data.event) {
         case "rejected":
-          return reject(Error("usernameNotAvailable"));
+          return reject(Error(data.reason));
         case "ready":
           return resolve(socket);
         default:

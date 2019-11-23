@@ -33,11 +33,11 @@ class Network:
         if not ws_ready.ok:
             raise web.HTTPMethodNotAllowed()
         await ws.prepare(request)
-        if self.registry.is_registered(user):
-            await ws.send_json(Box(event='rejected'))
+        error = self.registry.register(ws, user)
+        if error:
+            await ws.send_json(Box(event='rejected', reason=error))
             return ws
         await ws.send_json(Box(event='ready'))
-        self.registry.register(ws, user)
         await self.on_enter(self, user)
         try:
             await self._listen_messages(user, ws)
@@ -100,10 +100,9 @@ class SocketRegistry:
     def __init__(self):
         self.sockets = {}
 
-    def is_registered(self, uid):
-        return uid in self.sockets
-
     def register(self, ws, uid):
+        if uid in self.sockets:
+            return 'usernameNotAvailable'
         self.sockets[uid] = ws
         logging.debug('%s: registered socket', uid)
 
