@@ -1,3 +1,4 @@
+import asyncio
 from collections import namedtuple
 import logging
 
@@ -80,8 +81,7 @@ class Network:
 
     async def publish(self, body):
         logging.debug('publishing %s', body)
-        for ws in self.registry.sockets.values():
-            await ws.send_json(body)
+        await asyncio.gather(*[ws.send_json(body) for ws in self.registry.sockets.values()])
 
     async def receive(self, user, timeout=None):
         logging.debug('%s: waiting for message', user)
